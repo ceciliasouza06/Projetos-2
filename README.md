@@ -49,4 +49,15 @@
 ---
 
 
-## 📂 Estrutura do Repositório  
+## 👥 Programação em Par 
+
+Este projeto foi desenvolvido utilizando **programação em par (pair programming)** ao longo de todo o semestre, com revezamento dos papéis de _Driver_ e _Navigator_ entre os integrantes.
+
+### 📄 Relatório Completo
+
+O detalhamento de cada sessão de programação em par, bem como a associação entre **commits** e **duplas**, está descrito no documento abaixo:
+
+👉 [Relatório de Programação em Par – Cadeira de Projetos]([https://docs.google.com/document/d/SEU_LINK_AQUI](https://docs.google.com/document/d/19jUp8feWy4MvRQTqNsZ68W2hKKUJbAJL7bTHwkblPSY/edit?usp=sharing))
+
+> Para a tabela completa de commits (autor + parceiro de programação em par), consulte o relatório detalhado no Google Docs.
+
