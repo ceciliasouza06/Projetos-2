@@ -96,23 +96,6 @@ a:hover {
     justify-self: end;
 }
 
-.header-login .login-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 18px;
-    text-decoration: none;
-    color: #555;
-    font-weight: 600;
-    border-radius: 25px;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.header-login .login-btn:hover {
-    background-color: #555;
-    color: #fff;
-}
 /* Menu hamburger dentro */
 .main-nav {
     position: absolute;
@@ -156,7 +139,7 @@ a:hover {
     color: #f6c400;
 }
 .top-strip {
-    background-color: #B22222;
+    background-color: #000000;
     padding: 6px 0;
 }
 .top-strip-content {
@@ -166,7 +149,7 @@ a:hover {
     min-height: 48px;
 }
 .top-strip-logo img {
-    height: 36px;
+    height: 58px;
     width: auto;
     display: block;
 }
@@ -529,6 +512,26 @@ a:hover {
 .login-btn-secondary:hover {
     transform: scale(1.02); /* Leve zoom */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.login-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 55px;     /* opcional: limita o tamanho do botão */
+    height: 55px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.login-btn:hover {
+    background-color: rgba(0, 0, 0, 0.07);
+}
+
+.login-btn .login {
+    width: 28px;      /* ajuste para o tamanho que quiser */
+    height: 28px;
+    object-fit: contain;
 }
 
 .login-separator {

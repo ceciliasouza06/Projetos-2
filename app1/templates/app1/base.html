@@ -37,7 +37,9 @@
                     <a href="{% url 'logout' %}" class="login-btn">Sair</a>
                 
                 {% else %}
-                    <a href="{% url 'login' %}" class="login-btn">Login</a>
+                    <a href="{% url 'login' %}" class="login-btn">
+                        <img src="{% static 'app1/assets/avatar.png' %}" alt="Avatar de login" class="login" >
+                        </a>
                 {% endif %}
 
             </div>
