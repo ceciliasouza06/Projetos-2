@@ -3,26 +3,39 @@
 {% block content %}
     <main class="container">
         
-        {% if manchete_principal %}
-        <article class="card card-manchete">
-            
-            {% if manchete_principal.imagem %}
-                <img src="{{ manchete_principal.imagem.url }}" alt="{{ manchete_principal.titulo }}">
-            {% endif %}
+        <!-- Carrossel "De seu interesse" -->
+        <div class="stories-container">
+            <div class="stories-wrapper">
+                
+                {% for artigo in artigos_interesse %}
+                <article class="story-slide {% if forloop.first %}active{% endif %} card-manchete">
+                    {% if artigo.imagem %}
+                        <img src="{{ artigo.imagem.url }}" alt="{{ artigo.titulo }}" class="story-image">
+                    {% endif %}
 
-            <div class="card-content">
-                <span class="card-category">{{ manchete_principal.categoria|upper }}</span>
-                <h2 class="card-title">
-                    <a href="{% url 'exibir_artigo' manchete_principal.id %}">
-                        {{ manchete_principal.titulo }}
-                    </a>
-                </h2>
-                <p class="card-summary">{{ manchete_principal.resumo }}</p> 
+                    <div class="card-content">
+                        <span class="card-category">{{ artigo.categoria|upper }}</span>
+                        <h2 class="card-title">
+                            <a href="{% url 'exibir_artigo' artigo.id %}">
+                                {{ artigo.titulo }}
+                            </a>
+                        </h2>
+                        <p class="card-summary">{{ artigo.resumo }}</p> 
+                    </div>
+                </article>
+                {% endfor %}
+
             </div>
-        </article>
-        {% endif %}
 
+            <!-- Indicadores (bolinhas) -->
+            <div class="story-indicators">
+                {% for artigo in artigos_interesse %}
+                <span class="indicator {% if forloop.first %}active{% endif %}"></span>
+                {% endfor %}
+            </div>
+        </div>
 
+        <!-- Seção Mais Recentes -->
         <h3 class="section-title">Mais Recentes</h3>
         
         <div class="recent-grid">
@@ -43,7 +56,6 @@
             {% endfor %}
         </div>
 
-        </main>
+    </main>
         
-</body>
 {% endblock content %}

@@ -78,18 +78,79 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function(){
-            const toggle = document.getElementById('menu-toggle');
-            const nav = document.getElementById('main-nav');
+    document.addEventListener('DOMContentLoaded', function(){
+        // ===== MENU HAMBURGUER =====
+        const toggle = document.getElementById('menu-toggle');
+        const nav = document.getElementById('main-nav');
 
-            if (!toggle || !nav) return;
-
+        if (toggle && nav) {
             toggle.addEventListener('click', function(){
                 const isOpen = nav.classList.toggle('is-open');
                 toggle.classList.toggle('is-active', isOpen);
                 toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
             });
-        });
+        }
+
+        // ===== CARROSSEL DE STORIES =====
+        const slides = document.querySelectorAll('.story-slide');
+        const indicators = document.querySelectorAll('.indicator');
+        const container = document.querySelector('.stories-container');
+
+        if (slides.length > 0 && indicators.length > 0 && container) {
+            let currentSlide = 0;
+            let startX = 0;
+            let isDragging = false;
+
+            function showSlide(index) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                indicators.forEach(ind => ind.classList.remove('active'));
+                
+                slides[index].classList.add('active');
+                indicators[index].classList.add('active');
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                showSlide(currentSlide);
+            }
+
+            function prevSlide() {
+                currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+                showSlide(currentSlide);
+            }
+
+            // Clique nos indicadores
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    currentSlide = index;
+                    showSlide(currentSlide);
+                });
+            });
+
+            // Swipe touch
+            container.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+            });
+
+            container.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                
+                const endX = e.changedTouches[0].clientX;
+                const diff = startX - endX;
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        nextSlide();
+                    } else {
+                        prevSlide();
+                    }
+                }
+                
+                isDragging = false;
+            });
+        }
+    });
     </script>
 
     <!-- Barra de Navegação Inferior -->

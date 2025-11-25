@@ -1,5 +1,4 @@
-import re
-from django.http import FileResponse, HttpResponseRedirect, HttpResponse
+from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from .models import Artigos, Progresso_diario, Progresso
@@ -33,14 +32,56 @@ def home_page(request):
         mais_recentes = Artigos.objects.order_by('-data_publicacao').exclude(id=manchete_principal.id)[:6]
     else:
         mais_recentes = Artigos.objects.order_by('-data_publicacao')[:6]
+    
     artigos_opiniao = Artigos.objects.filter(categoria='Opinião').order_by('-data_publicacao')[:4]
     artigos_politica = Artigos.objects.filter(categoria='Política').order_by('-data_publicacao')[:4]
+    
+    # ✅ ADICIONE ESTA PARTE AQUI:
+    # Carrossel "De seu interesse"
+    artigos_interesse = []
+    if request.user.is_authenticated:
+        # Pega favoritos do usuário
+        favoritos = request.user.artigos_favoritos.all()
+        
+        # Pega artigos lidos pelo usuário
+        artigos_lidos_ids = Progresso.objects.filter(
+            user=request.user, 
+            completado=True
+        ).values_list('artigo_id', flat=True)
+        
+        # Conta categorias dos favoritos e lidos
+        categorias_count = {}
+        for artigo in favoritos:
+            categorias_count[artigo.categoria] = categorias_count.get(artigo.categoria, 0) + 1
+        
+        artigos_lidos = Artigos.objects.filter(id__in=artigos_lidos_ids)
+        for artigo in artigos_lidos:
+            categorias_count[artigo.categoria] = categorias_count.get(artigo.categoria, 0) + 1
+        
+        # Se tem categorias preferidas, busca artigos dessas categorias
+        if categorias_count:
+            # Ordena categorias por quantidade (mais lida/favoritada primeiro)
+            categorias_ordenadas = sorted(categorias_count.items(), key=lambda x: x[1], reverse=True)
+            categoria_favorita = categorias_ordenadas[0][0]
+            
+            # Busca 4 artigos da categoria favorita (excluindo os já favoritados/lidos)
+            ids_excluir = list(favoritos.values_list('id', flat=True)) + list(artigos_lidos_ids)
+            artigos_interesse = Artigos.objects.filter(
+                categoria=categoria_favorita
+            ).exclude(
+                id__in=ids_excluir
+            ).order_by('-data_publicacao')[:4]
+    
+    # Se não tem artigos de interesse (usuário não logado ou sem histórico), mostra artigos recentes variados
+    if not artigos_interesse:
+        artigos_interesse = Artigos.objects.order_by('-data_publicacao')[:4]
     
     context = {
         'manchete_principal': manchete_principal,
         'mais_recentes': mais_recentes,
         'artigos_opiniao': artigos_opiniao,
-        'artigos_politica': artigos_politica, 
+        'artigos_politica': artigos_politica,
+        'artigos_interesse': artigos_interesse,  # ✅ ADICIONE ESTA LINHA
     }
     return render(request, 'app1/home.html', context)
 

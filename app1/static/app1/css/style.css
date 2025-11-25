@@ -758,3 +758,72 @@ body {
     background-color: #E53935;
     border-radius: 0 0 3px 3px;
 }
+
+/* ========================================
+   CARROSSEL DE MANCHETES (STORIES)
+   ======================================== */
+
+.stories-container {
+    position: relative;
+    width: 100%;
+    margin: 0 0 40px 0;
+    overflow: hidden;
+}
+
+.stories-wrapper {
+    display: flex;
+    transition: transform 0.3s ease-in-out;
+    touch-action: pan-y;
+}
+
+.story-slide {
+    min-width: 100%;
+    box-sizing: border-box;
+    display: none;
+}
+
+.story-slide.active {
+    display: block;
+}
+
+.story-slide.card-manchete {
+    position: relative;
+}
+
+.story-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Indicadores (bolinhas) */
+.story-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px 0;
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.indicator.active {
+    background-color: #E53935;
+    border-color: #E53935;
+}
+
+.indicator:hover {
+    background-color: rgba(229, 57, 53, 0.7);
+}
