@@ -328,6 +328,6 @@ def enviar_sugestoes_view(request):
 
     return redirect('home')
 
-
+@login_required
 def newsletter_signup (request):
     return render(request,'app1/newsletter_signup.html',{})
