@@ -7,8 +7,9 @@
     
     <title>{% block title %}Jornal do Commercio{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'app1/css/style.css' %}">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <div class="top-strip">
         <div class="container top-strip-content">
@@ -38,8 +39,8 @@
                 
                 {% else %}
                     <a href="{% url 'login' %}" class="login-btn">
-                        <img src="{% static 'app1/assets/avatar.png' %}" alt="Avatar de login" class="login" >
-                        </a>
+                        <i class="fa-regular fa-user"></i>
+                    </a>
                 {% endif %}
 
             </div>
@@ -90,5 +91,33 @@
             });
         });
     </script>
+
+    <!-- Barra de Navegação Inferior -->
+<nav class="bottom-nav">
+    <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+    </a>
+    
+    <a href="#" class="nav-item">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Buscar</span>
+    </a>
+    
+    <a href="#" class="nav-item">
+        <i class="fa-solid fa-tower-broadcast"></i>
+        <span>Ao Vivo</span>
+    </a>
+    
+    <a href="{% url 'meus_favoritos' %}" class="nav-item {% if request.resolver_match.url_name == 'meus_favoritos' %}active{% endif %}">
+        <i class="fa-regular fa-bookmark"></i>
+        <span>Salvos</span>
+    </a>
+    
+    <a href="#" class="nav-item">
+        <i class="fa-regular fa-bell"></i>
+        <span>Alertas</span>
+    </a>
+</nav>
     </body>
 </html>
