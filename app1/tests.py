@@ -1,537 +1,707 @@
-from django.test import TestCase
+from django.test import TestCase, Client, LiveServerTestCase
+from django.urls import reverse
+from django.contrib.auth.models import User
+from django.utils import timezone
+from app1.models import Artigo, Bullet
 import pytest
+import time
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By  
 from selenium.webdriver.chrome.options import Options
-import pytest, time
-from unittest.mock import patch
-from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-class bulletsPage:
-    def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
-    def abrir(self, url):
-        self.driver.get(url)
-    def obter_titulo(self):
-        titulo = self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "h1")))
-        return titulo.text
-    def obter_lista_bullets(self):
-        bullets = self.driver.find_elements(By.CSS_SELECTOR, "ul li")
-        return [b.text for b in bullets]
-    def verificar_mensagem_vazia(self):
-        return "Nenhum Ponto Chave Encontrado" in self.driver.page_source
+class TesteBase(LiveServerTestCase):
 
-@pytest.fixture
-def driver():
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(options=options)
-    driver.maximize_window()
-    yield driver
-    driver.quit()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
-class Test_bullets:
-    def test_pagina_com_bullets(self, driver):
-        page = bulletsPage(driver)
-        page.abrir("http://localhost:8000/pontos_chave_com_bullets/")
-        titulo = page.obter_titulo()
-        bullets = page.obter_lista_bullets()
-        assert "Pontos Chave do Artigo" in titulo
-        assert len(bullets) > 0
-        assert all(b.strip() != "" for b in bullets)
-    def test_pagina_sem_bullets(self, driver):
-        page = bulletsPage(driver)
-        page.abrir("http://localhost:8000/pontos_chave_vazio/")
-        assert page.verificar_mensagem_vazia()
-        assert len(page.obter_lista_bullets()) == 0
+        # Configuração do Selenium
+        chrome_options = Options()
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
-class exibir_artigo_Page:
-    def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
-    def abrir(self, url):
-        self.driver.get(url)
-    def obter_titulo(self):
-        return self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "h1"))).text
-    def verificar_audio(self):
-        return self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "audio"))).is_displayed()
-    def verificar_links(self):
-        links = self.driver.find_elements(By.CSS_SELECTOR, ".article-actions a")
-        return [l.text for l in links]
-    def verificar_banner(self):
+        cls.selenium = webdriver.Chrome(options=chrome_options)
+        cls.selenium.implicitly_wait(5)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.selenium.quit()
+        super().tearDownClass()
+
+    def setUp(self):
+        self.client = Client()
+        self.home_url = reverse("home")
+
+#parte dos testes com TestCase
+    def test_template_renderiza(self):
+        response = self.client.get(self.home_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Jornal do Commercio")
+
+    def test_links_menu_existem(self):
+        response = self.client.get(self.home_url)
+
+        urls = [
+            reverse("topico_pernambuco"),
+            reverse("topico_politica"),
+            reverse("topico_esportes"),
+            reverse("topico_cultura"),
+            reverse("newsletter"),
+        ]
+
+        for url in urls:
+            self.assertContains(response, f'href="{url}"')
+
+    def test_usuario_nao_logado_ve_botao_login(self):
+        response = self.client.get(self.home_url)
+        self.assertContains(response, reverse("login"))
+        self.assertNotContains(response, reverse("meus_favoritos"))
+
+    def test_usuario_logado_ve_favoritos_e_logout(self):
+        user = User.objects.create_user(username="teste", password="123")
+        self.client.login(username="teste", password="123")
+
+        response = self.client.get(self.home_url)
+
+        self.assertContains(response, "Olá, teste!")
+        self.assertContains(response, reverse("logout"))
+        self.assertContains(response, reverse("meus_favoritos"))
+
+#parte dos testes com Selenium
+    def test_menu_hamburguer_abre_e_fecha(self):
+        self.selenium.get(self.live_server_url + self.home_url)
+
+        hamburger = self.selenium.find_element(By.ID, "menu-toggle")
+        nav = self.selenium.find_element(By.ID, "main-nav")
+
+        # Começa fechado
+        self.assertNotIn("is-open", nav.get_attribute("class"))
+
+        # Abre
+        hamburger.click()
+        time.sleep(0.3)
+        self.assertIn("is-open", nav.get_attribute("class"))
+
+        # Fecha
+        hamburger.click()
+        time.sleep(0.3)
+        self.assertNotIn("is-open", nav.get_attribute("class"))
+
+class teste_bullets(LiveServerTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        # Configurar Selenium
+        chrome_options = Options()
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
+        cls.selenium = webdriver.Chrome(options=chrome_options)
+        cls.selenium.implicitly_wait(4)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.selenium.quit()
+        super().tearDownClass()
+
+    def setUp(self):
+        self.client = Client()
+        self.artigo = Artigo.objects.create(titulo="Artigo de Teste")
+        self.url = reverse("bullets_view", args=[self.artigo.id])
+#teste django
+    def test_renderiza_sem_bullets(self):
+        response = self.client.get(self.url)
+
+        self.assertContains(response, "Nenhum Ponto Chave Encontrado")
+        self.assertContains(response, "ainda não possui pontos chave")
+
+    def test_renderiza_com_bullets(self):
+        Bullet.objects.create(artigo=self.artigo, bullets="Primeiro ponto")
+        Bullet.objects.create(artigo=self.artigo, bullets="Segundo ponto")
+
+        response = self.client.get(self.url)
+
+        # título dinâmico
+        self.assertContains(response, 'Pontos Chave do Artigo: "Artigo de Teste"')
+
+        # bullets
+        self.assertContains(response, "Primeiro ponto")
+        self.assertContains(response, "Segundo ponto")
+#teste selenium
+    def test_selenium_renderiza_bullets(self):
+        Bullet.objects.create(artigo=self.artigo, bullets="Bullet Selenium")
+
+        self.selenium.get(self.live_server_url + self.url)
+        time.sleep(0.3)
+
+        # Pega o texto da página
+        body = self.selenium.find_element(By.TAG_NAME, "body").text
+
+        self.assertIn("Pontos Chave do Artigo", body)
+        self.assertIn("Bullet Selenium", body)
+
+    def test_selenium_sem_bullets(self):
+        self.selenium.get(self.live_server_url + self.url)
+        time.sleep(0.3)
+
+        body = self.selenium.find_element(By.TAG_NAME, "body").text
+
+        self.assertIn("Nenhum Ponto Chave Encontrado", body)
+        self.assertIn("ainda não possui pontos chave", body)
+
+class cadastro_teste(TestCase, LiveServerTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client = Client()
+        cls.url = reverse("cadastro")
         try:
-            banner = self.driver.find_element(By.ID, "banner")
-            return banner.is_displayed()
+            cls.browser = webdriver.Chrome()
+            cls.selenium_enabled = True
         except:
-            return False
-    def obter_conteudo(self):
+            cls.selenium_enabled = False
+
+    @classmethod
+    def tearDownClass(cls):
+        if getattr(cls, "selenium_enabled", False):
+            cls.browser.quit()
+        super().tearDownClass()
+
+    def test_django_get(self):
+        r=self.client.get(self.url)
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r,"Crie sua conta")
+
+    def test_django_post_invalido(self):
+        r=self.client.post(self.url,{})
+        self.assertEqual(r.status_code,200)
+        self.assertIn("errorlist",r.content.decode())
+
+    def test_django_post_valido(self):
+        r=self.client.post(self.url,{
+            "username":"user1",
+            "email":"u1@example.com",
+            "password1":"Senha123!",
+            "password2":"Senha123!"
+        })
+        self.assertEqual(r.status_code,302)
+        self.assertEqual(r.url,reverse("home"))
+
+    @pytest.mark.django_db
+    def test_pytest_post(self):
+        c=Client()
+        r=c.post(self.url,{
+            "username":"user2",
+            "email":"u2@example.com",
+            "password1":"Senha123!",
+            "password2":"Senha123!"
+        })
+        assert r.status_code==302
+        assert r.url==reverse("home")
+
+    def test_selenium_fluxo(self):
+        if not getattr(self,"selenium_enabled",False):
+            self.skipTest("Selenium não disponível")
+        self.browser.get(self.live_server_url+self.url)
+        self.browser.find_element(By.ID,"id_username").send_keys("user3")
+        self.browser.find_element(By.ID,"id_email").send_keys("u3@example.com")
+        self.browser.find_element(By.ID,"id_password1").send_keys("Senha123!")
+        self.browser.find_element(By.ID,"id_password2").send_keys("Senha123!")
+        self.browser.find_element(By.CSS_SELECTOR,"button[type='submit']").click()
+        self.assertIn(reverse("home"),self.browser.current_url)
+
+class contexto_teste(TestCase, LiveServerTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client=Client()
+        cls.url=reverse("exibir_artigo",args=[1])
         try:
-            elemento = self.driver.find_element(By.CSS_SELECTOR, ".article-content p")
-            return elemento.text
+            cls.browser=webdriver.Chrome()
+            cls.selenium_enabled=True
         except:
-            return ""
+            cls.selenium_enabled=False
 
-    def obter_data_publicacao(self):
+    @classmethod
+    def tearDownClass(cls):
+        if getattr(cls,"selenium_enabled",False):
+            cls.browser.quit()
+        super().tearDownClass()
+
+    def setUp(self):
+        from app1.models import Artigo
+        self.artigo=Artigo.objects.create(
+            id=1,
+            titulo="Titulo Teste",
+            conteudo="Conteudo Teste"
+        )
+
+    def test_django_get(self):
+        r=self.client.get(self.url)
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r,"Titulo Teste")
+        self.assertContains(r,"Conteudo Teste")
+
+    def test_django_sem_links(self):
+        r=self.client.get(self.url)
+        self.assertContains(r,"Nenhum contexto adicional encontrado")
+
+    @pytest.mark.django_db
+    def test_pytest_render(self):
+        c=Client()
+        r=c.get(self.url)
+        assert r.status_code==200
+        assert "Titulo Teste" in r.content.decode()
+
+    def test_selenium_render(self):
+        if not getattr(self,"selenium_enabled",False):
+            self.skipTest("Selenium não disponível")
+        self.browser.get(self.live_server_url+self.url)
+        h=self.browser.find_element(By.TAG_NAME,"h1").text
+        self.assertEqual(h,"Titulo Teste")
+
+class newsletter_teste(TestCase, LiveServerTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client=Client()
+        cls.url=reverse("newsletter")
         try:
-            return self.driver.find_element(By.CLASS_NAME, "card-date").text
+            cls.browser=webdriver.Chrome()
+            cls.selenium_enabled=True
         except:
-            return None
+            cls.selenium_enabled=False
 
-class Test_exibir_artigo:
-    def test_artigo_com_banner(self, driver):
-        page = exibir_artigo_Page(driver)
-        page.abrir("http://localhost:8000/artigo_com_banner/")
-        assert page.obter_titulo() != ""
-        assert page.verificar_audio()
-        links = page.verificar_links()
-        assert "Sugestões de Leitura" in links
-        assert "Ver Pontos Chave" in links
-        assert page.verificar_banner()
-        assert page.obter_conteudo().strip() != ""
-        data = page.obter_data_publicacao()
-        assert data is None or "Publicado em:" in data
-        
-    def test_artigo_sem_banner(self, driver):
-        page = exibir_artigo_Page(driver)
-        page.abrir("http://localhost:8000/artigo_sem_banner/")
-        assert page.obter_titulo() != ""
-        assert page.verificar_audio()
-        links = page.verificar_links()
-        assert "Sugestões de Leitura" in links
-        assert "Ver Pontos Chave" in links
-        assert not page.verificar_banner()
-        assert page.obter_conteudo().strip() != ""
-        data = page.obter_data_publicacao()
-        assert data is None or "Publicado em:" in data
+    @classmethod
+    def tearDownClass(cls):
+        if getattr(cls,"selenium_enabled",False):
+            cls.browser.quit()
+        super().tearDownClass()
 
-class Test_home:
-    def test_manchete_imagem(self):
-        manchete_img = self.driver.find_elements(By.CSS_SELECTOR, ".card-manchete img")
-        if manchete_img:  
-            src = manchete_img[0].get_attribute("src")
-            assert src.strip() != ""
+    def setUp(self):
+        from app1.models import Artigo
+        self.artigo=Artigo.objects.create(
+            titulo="Artigo Teste",
+            subtitulo="Resumo Teste",
+            imagem_url="https://placehold.co/150x150",
+            categoria="Tecnologia"
+        )
 
-    def test_manchete_resumo(self):
-        resumo = self.driver.find_element(By.CSS_SELECTOR, ".card-manchete .card-summary").text
-        assert resumo.strip() != ""
+    def test_django_render(self):
+        r=self.client.get(self.url,{"categoria":"Tecnologia"})
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r,"Jornal do Commercio")
+        self.assertContains(r,"Novidades na categoria")
+        self.assertContains(r,"Artigo Teste")
 
-    def test_manchete_categoria(self):
-        categoria = self.driver.find_element(By.CSS_SELECTOR, ".card-manchete .card-category").text
-        assert categoria.strip() != ""
+    @pytest.mark.django_db
+    def test_pytest_render(self):
+        c=Client()
+        r=c.get(self.url,{"categoria":"Tecnologia"})
+        assert r.status_code==200
+        t=r.content.decode()
+        assert "Jornal do Commercio" in t
+        assert "Artigo Teste" in t
 
-    def test_mais_recentes_titulos_e_categorias(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".recent-grid article")
-        for artigo in artigos:
-            titulo = artigo.find_element(By.CSS_SELECTOR, ".card-title a").text
-            categoria = artigo.find_element(By.CSS_SELECTOR, ".card-category").text
-            assert titulo.strip() != ""
-            assert categoria.strip() != ""
+    def test_selenium_render(self):
+        if not getattr(self,"selenium_enabled",False):
+            self.skipTest("Selenium não disponível")
+        self.browser.get(self.live_server_url+self.url+"?categoria=Tecnologia")
+        h=self.browser.find_element(By.TAG_NAME,"h1").text
+        self.assertEqual(h,"Jornal do Commercio")
 
-    def setup_class(self):
-        opts = Options()
-        opts.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=opts)
-        self.driver.get("http://127.0.0.1:8000/")
+class artigo_teste(TestCase, LiveServerTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client=Client()
+        try:
+            cls.browser=webdriver.Chrome()
+            cls.selenium_enabled=True
+        except:
+            cls.selenium_enabled=False
 
-    def teardown_class(self):
-        self.driver.quit()
+    @classmethod
+    def tearDownClass(cls):
+        if getattr(cls,"selenium_enabled",False):
+            cls.browser.quit()
+        super().tearDownClass()
 
-    def test_titulo_pagina(self):
-        assert "Jornal do Commercio" in self.driver.title
+    def setUp(self):
+        from app1.models import Artigo
+        self.user=User.objects.create_user(username="u",password="123")
+        self.artigo=Artigo.objects.create(
+            titulo="Artigo Teste",
+            conteudo="Conteudo Teste",
+        )
+        self.url=reverse("exibir_artigo",args=[self.artigo.id])
 
-    def test_menu_links(self):
-        links = self.driver.find_elements(By.CSS_SELECTOR, ".main-nav a")
-        textos = [link.text for link in links]
-        esperado = ["Pernambuco", "Política", "Esportes", "Cultura"]
-        for e in esperado: assert e in textos
+    def test_django_render(self):
+        r=self.client.get(self.url)
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r,"Artigo Teste")
+        self.assertContains(r,"Sugestões de Leitura")
+        self.assertContains(r,"Ver Pontos Chave")
+        self.assertContains(r,"Ver conteudo de contexto")
 
-    def test_manchete_principal(self):
-        manchete = self.driver.find_elements(By.CSS_SELECTOR, ".card-manchete")
-        assert len(manchete) > 0
-        titulo = manchete[0].find_element(By.CSS_SELECTOR, ".card-title a")
-        assert titulo.text != ""
+    def test_banner(self):
+        r=self.client.get(self.url,{"mensagem":"Sucesso"})
+        self.assertContains(r,"Sucesso")
 
-    def test_mais_recentes(self):
-        recentes = self.driver.find_elements(By.CSS_SELECTOR, ".recent-grid article")
-        assert len(recentes) > 0
+    def test_favoritar_deslogado(self):
+        r=self.client.get(self.url)
+        self.assertContains(r,"fazer login")
 
-    def test_blocos_sidebar(self):
-        secoes = self.driver.find_elements(By.CSS_SELECTOR, ".sidebar .section-title")
-        nomes = [s.text for s in secoes]
-        assert "Política" in nomes
-        assert "Opinião" in nomes
+    def test_favoritar_logado(self):
+        self.client.login(username="u",password="123")
+        r=self.client.get(self.url)
+        self.assertContains(r,"Favoritar")
 
-class Test_sugestão:
-    @pytest.fixture(scope="class", autouse=True)
-    def test_sugestoes_categoria_no_titulo(self):
-        box = self.driver.find_element(By.CSS_SELECTOR, ".sugestoes-box h3").text
-        assert "Sugestões de Leitura" in box
-        assert "Categoria:" in box
-        artigo_categoria = self.driver.find_element(By.CSS_SELECTOR, ".artigo-principal .card-date strong").text
-        assert artigo_categoria.lower() in box.lower()
+    @pytest.mark.django_db
+    def test_pytest_render(self):
+        c=Client()
+        r=c.get(self.url)
+        assert r.status_code==200
+        html=r.content.decode()
+        assert "Artigo Teste" in html
+
+    def test_selenium_render(self):
+        if not getattr(self,"selenium_enabled",False):
+            self.skipTest("Selenium não disponível")
+        self.browser.get(self.live_server_url+self.url)
+        h1=self.browser.find_element(By.TAG_NAME,"h1").text
+        self.assertEqual(h1,"Artigo Teste")
+
+class home_teste(TestCase, LiveServerTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client=Client()
+        cls.url=reverse("home")
+        try:
+            cls.browser=webdriver.Chrome()
+            cls.selenium_enabled=True
+        except:
+            cls.selenium_enabled=False
+
+    @classmethod
+    def tearDownClass(cls):
+        if getattr(cls,"selenium_enabled",False):
+            cls.browser.quit()
+        super().tearDownClass()
+
+    def setUp(self):
+        from app1.models import Artigo
+        self.a1=Artigo.objects.create(
+            titulo="Artigo Interesse 1",
+            resumo="Resumo 1",
+            categoria="Tech"
+        )
+        self.a2=Artigo.objects.create(
+            titulo="Artigo Recente 1",
+            resumo="Resumo 2",
+            categoria="News"
+        )
+
+    def test_django_render(self):
+        r=self.client.get(self.url)
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r,"Mais Recentes")
+        self.assertContains(r,"Artigo Interesse 1")
+        self.assertContains(r,"Artigo Recente 1")
+
+    @pytest.mark.django_db
+    def test_pytest_render(self):
+        c=Client()
+        r=c.get(self.url)
+        assert r.status_code==200
+        html=r.content.decode()
+        assert "Mais Recentes" in html
+        assert "Artigo Interesse 1" in html
+
+    def test_selenium_render(self):
+        if not getattr(self,"selenium_enabled",False):
+            self.skipTest("Selenium não disponível")
+        self.browser.get(self.live_server_url+self.url)
+        h=self.browser.find_element(By.TAG_NAME,"h3").text
+        self.assertEqual(h,"Mais Recentes")
+
+class login_teste(TestCase):
+    def setUp(self):
+        self.client=Client()
+
+    def test_login_existente_template_django(self):
+        url=reverse('login_existente')
+        response=self.client.get(url)
+        self.assertEqual(response.status_code,200)
+        self.assertContains(response,'Entrar na Conta')
+        self.assertContains(response,'id_login')
+        self.assertContains(response,'id_email')
+        self.assertContains(response,'id_senha')
+
+    @pytest.mark.django_db
+    def test_login_existente_template_pytest(self,client):
+        url=reverse('login_existente')
+        r=client.get(url)
+        assert r.status_code==200
+        assert 'Entrar na Conta' in r.content.decode()
+        assert 'id_login' in r.content.decode()
+        assert 'id_email' in r.content.decode()
+        assert 'id_senha' in r.content.decode()
+
+    def test_login_existente_template_selenium(self,live_server,selenium):
+        selenium.get(live_server.url+reverse('login_existente'))
+        selenium.find_element(By.ID,'id_login')
+        selenium.find_element(By.ID,'id_email')
+        selenium.find_element(By.ID,'id_senha')
+        selenium.find_element(By.CSS_SELECTOR,'button[type="submit"]')
+
+    def test_login_page_template_django(self):
+        url=reverse('login')
+        response=self.client.get(url)
+        self.assertEqual(response.status_code,200)
+        self.assertContains(response,'Entrar')
+        self.assertContains(response,'Criar conta')
+        self.assertContains(response,'Condições de uso')
+        self.assertContains(response,'Conteúdos Personalizados')
+
+    @pytest.mark.django_db
+    def test_login_page_template_pytest(self,client):
+        url=reverse('login')
+        r=client.get(url)
+        text=r.content.decode()
+        assert r.status_code==200
+        assert 'Entrar' in text
+        assert 'Criar conta' in text
+        assert 'Conteúdos Personalizados' in text
+
+    def test_login_page_template_selenium(self,live_server,selenium):
+        selenium.get(live_server.url+reverse('login'))
+        selenium.find_element(By.CLASS_NAME,'login-main-title')
+        selenium.find_element(By.CLASS_NAME,'login-btn-primary')
+        selenium.find_element(By.CLASS_NAME,'login-btn-secondary')
+        selenium.find_element(By.CLASS_NAME,'benefit-list')
+
+class meusfav_teste(TestCase):
+    def setUp(self):
+        self.client=Client()
+
+    def test_favoritos_template_django(self):
+        url=reverse('favoritos')
+        response=self.client.get(url)
+        self.assertEqual(response.status_code,200)
+        self.assertContains(response,'Meus Artigos Favoritos')
+
+    @pytest.mark.django_db
+    def test_favoritos_template_pytest(self,client):
+        url=reverse('favoritos')
+        r=client.get(url)
+        assert r.status_code==200
+        assert 'Meus Artigos Favoritos' in r.content.decode()
+
+    def test_favoritos_template_selenium(self,live_server,selenium):
+        selenium.get(live_server.url+reverse('favoritos'))
+        selenium.find_element(By.TAG_NAME,'h2')
+        selenium.find_element(By.CLASS_NAME,'articles-list')
+
+class Teste_newsletter(TestCase):
+    def setUp(self):
+        self.client=Client()
+
+    def test_newsletter_template_django(self):
+        url=reverse('newsletter')
+        response=self.client.get(url)
+        self.assertEqual(response.status_code,200)
+        self.assertContains(response,'Jornal do Commercio')
+        self.assertContains(response,'ATIVAR!')
+
+    @pytest.mark.django_db
+    def test_newsletter_template_pytest(self,client):
+        url=reverse('newsletter')
+        r=client.get(url)
+        assert r.status_code==200
+        content=r.content.decode()
+        assert 'Jornal do Commercio' in content
+        assert 'ATIVAR!' in content
+
+    def test_newsletter_template_selenium(self,live_server,selenium):
+        selenium.get(live_server.url+reverse('newsletter'))
+        selenium.find_element(By.CLASS_NAME,'header')
+        selenium.find_element(By.CLASS_NAME,'btn')
+
+class Teste_sugestão(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.artigo = Artigo.objects.create(
+            titulo="Teste Artigo",
+            conteudo="Conteúdo do artigo",
+            categoria="Esportes",
+            data_publicacao=timezone.now()
+        )
+
+    def test_artigo_template_django(self):
+        url = reverse('exibir_artigo', args=[self.artigo.pk])
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, self.artigo.titulo)
+        self.assertContains(r, self.artigo.categoria)
+        self.assertContains(r, "Sugestões de Leitura")
+
+    @pytest.mark.django_db
+    def test_artigo_template_pytest(self, client):
+        artigo = Artigo.objects.create(
+            titulo="Teste Pytest",
+            conteudo="abc",
+            categoria="Cultura",
+            data_publicacao=timezone.now()
+        )
+        url = reverse('exibir_artigo', args=[artigo.pk])
+        r = client.get(url)
+        assert r.status_code == 200
+        c = r.content.decode()
+        assert artigo.titulo in c
+        assert "Sugestões de Leitura" in c
+
+    def test_artigo_template_selenium(self, live_server, selenium):
+        url = live_server.url + reverse('exibir_artigo', args=[self.artigo.pk])
+        selenium.get(url)
+        selenium.find_element(By.TAG_NAME, "h1")
+        selenium.find_element(By.CLASS_NAME, "conteudo")
+        selenium.find_element(By.CLASS_NAME, "sugestoes-box") 
     
-    def test_datas_sugestoes(self):
-        sugestoes = self.driver.find_elements(By.CSS_SELECTOR, ".sugestoes-box ul li")
-        for s in sugestoes:
-            data = s.find_element(By.TAG_NAME, "small").text
-            assert "/" in data #para ver o formato certo de data
+class TesteCultura(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.artigo = Artigo.objects.create(
+            titulo="Artigo Cultura",
+            conteudo="Conteúdo",
+            categoria="Cultura",
+            data_publicacao=timezone.now()
+        )
 
-    def setup_class(self):
-        opts = Options()
-        opts.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=opts)
-        self.driver.get("http://127.0.0.1:8000/artigo/1/")
-        yield   
-        self.driver.quit()
+    def test_template_django(self):
+        r = self.client.get(reverse("topico_cultura"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Arte, Tradição e o Panorama Cultural")
 
-    def test_titulo_pagina(self):
-        assert "Detalhe do Artigo" in self.driver.title
+    @pytest.mark.django_db
+    def test_template_pytest(self, client):
+        Artigo.objects.create(
+            titulo="Teste Pytest Cultura",
+            conteudo="aaa",
+            categoria="Cultura",
+            data_publicacao=timezone.now()
+        )
+        r = client.get(reverse("topico_cultura"))
+        assert r.status_code == 200
+        assert "CULTURA" in r.content.decode()
 
-    def test_header(self):
-        nav = self.driver.find_elements(By.CSS_SELECTOR, ".main-nav a")
-        textos = [n.text.lower() for n in nav]
-        for item in ["home", "pernambuco", "política", "esportes", "cultura"]:
-            assert item in textos
+    def test_template_selenium(self, live_server, selenium):
+        selenium.get(live_server.url + reverse("topico_cultura"))
+        selenium.find_element(By.CLASS_NAME, "section-title")
 
-    def test_artigo_principal(self):
-        titulo = self.driver.find_element(By.CSS_SELECTOR, ".artigo-principal h1").text
-        categoria = self.driver.find_element(By.CSS_SELECTOR, ".card-date").text
-        conteudo = self.driver.find_element(By.CSS_SELECTOR, ".conteudo").text
-        assert titulo != ""
-        assert "Categoria:" in categoria
-        assert len(conteudo) > 0
+class TesteEsportes(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.artigo = Artigo.objects.create(
+            titulo="Artigo Esportes",
+            conteudo="Conteúdo",
+            categoria="Esportes",
+            data_publicacao=timezone.now()
+        )
 
-    def test_sugestoes(self):
-        box = self.driver.find_element(By.CSS_SELECTOR, ".sugestoes-box h3").text
-        assert "Sugestões de Leitura" in box
+    def test_template_django(self):
+        r = self.client.get(reverse("topico_esportes"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Resultados e Novidades Esportivas")
+
+    @pytest.mark.django_db
+    def test_template_pytest(self, client):
+        Artigo.objects.create(
+            titulo="Teste Pytest Esportes",
+            conteudo="aaa",
+            categoria="Esportes",
+            data_publicacao=timezone.now()
+        )
+        r = client.get(reverse("topico_esportes"))
+        assert r.status_code == 200
+        assert "ESPORTES" in r.content.decode()
+
+    def test_template_selenium(self, live_server, selenium):
+        selenium.get(live_server.url + reverse("topico_esportes"))
+        selenium.find_element(By.CLASS_NAME, "section-title") 
+
+class TestePernambuco(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.artigo = Artigo.objects.create(
+            titulo="Artigo Pernambuco",
+            conteudo="Conteúdo",
+            categoria="Pernambuco",
+            data_publicacao=timezone.now()
+        )
+
+    def test_template_django(self):
+        r = self.client.get(reverse("topico_pernambuco"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Notícias e Fatos de Pernambuco")
+
+    @pytest.mark.django_db
+    def test_template_pytest(self, client):
+        Artigo.objects.create(
+            titulo="Teste Pytest Pernambuco",
+            conteudo="aaa",
+            categoria="Pernambuco",
+            data_publicacao=timezone.now()
+        )
+        r = client.get(reverse("topico_pernambuco"))
+        assert r.status_code == 200
+        assert "PERNAMBUCO" in r.content.decode()
+
+    def test_template_selenium(self, live_server, selenium):
+        selenium.get(live_server.url + reverse("topico_pernambuco"))
+        selenium.find_element(By.CLASS_NAME, "section-title")
+
+class TestePolitica(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.artigo = Artigo.objects.create(
+            titulo="Artigo Política",
+            conteudo="Conteúdo",
+            categoria="Política",
+            data_publicacao=timezone.now()
+        )
+
+    def test_template_django(self):
+        r = self.client.get(reverse("topico_politica"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Análises e Notícias de Política")
+
+    @pytest.mark.django_db
+    def test_template_pytest(self, client):
+        Artigo.objects.create(
+            titulo="Teste Pytest Política",
+            conteudo="aaa",
+            categoria="Política",
+            data_publicacao=timezone.now()
+        )
+        r = client.get(reverse("topico_politica"))
+        assert r.status_code == 200
+        assert "POLÍTICA" in r.content.decode()
+
+    def test_template_selenium(self, live_server, selenium):
+        selenium.get(live_server.url + reverse("topico_politica"))
+        selenium.find_element(By.CLASS_NAME, "section-title")
+
+
+
+
+
+
+
     
-        sugestoes = self.driver.find_elements(By.CSS_SELECTOR, ".sugestoes-box ul li a")
-    
-        if len(sugestoes) == 0:
-            msg = self.driver.find_element(By.CSS_SELECTOR, ".sugestoes-box p").text
-            assert "Não há mais artigos recentes nesta categoria" in msg
-        else:
-            assert len(sugestoes) > 0
-
-
-class Test_Topico_Cultura:
-    @pytest.fixture(scope="class", autouse=True)
-    def setup_class(self):
-        opts = Options()
-        opts.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=opts)
-        self.driver.get("http://127.0.0.1:8000/topico_cultura/")
-        yield
-        self.driver.quit()
-
-    def test_titulo_pagina(self):
-        assert "Tópico: Cultura" in self.driver.title
-
-    def test_header_menu(self):
-        nav = self.driver.find_elements(By.CSS_SELECTOR, ".main-nav a")
-        textos = [n.text.lower() for n in nav]
-        for item in ["home","política","pernambuco","esportes"]:
-            assert item in textos
-
-    def test_secao_artigos(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        if artigos:
-            for a in artigos:
-                titulo = a.find_element(By.CSS_SELECTOR, ".card-title a").text
-                categoria = a.find_element(By.CSS_SELECTOR, ".card-category").text
-                data = a.find_element(By.CSS_SELECTOR, ".card-date").text if len(a.find_elements(By.CSS_SELECTOR, ".card-date"))>0 else ""
-                assert titulo != "" or "Nenhum Artigo de Cultura Encontrado" in a.text
-                assert categoria != "" or "Nenhum Artigo de Cultura Encontrado" in a.text
-        else:
-            msg = self.driver.find_element(By.TAG_NAME,"h2").text
-            assert "Nenhum Artigo de Cultura Encontrado" in msg
-    def test_artigos_resumo(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            if a.find_elements(By.CSS_SELECTOR, ".card-summary"):
-                resumo = a.find_element(By.CSS_SELECTOR, ".card-summary").text
-                assert resumo.strip() != ""
-    def test_artigos_categoria_cultura(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            categoria = a.find_element(By.CSS_SELECTOR, ".card-category").text
-            assert categoria.upper() == "CULTURA"
-    def test_datas_artigos(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            data = a.find_element(By.CSS_SELECTOR, ".card-date").text
-            assert "Publicado em:" in data
-            assert "/" in data
-            assert ":" in data
-
-
-class Test_topico_esportes:
-    @pytest.fixture(scope="class", autouse=True)
-    def setup_class(self):
-        opts = Options()
-        opts.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=opts)
-        self.driver.get("http://127.0.0.1:8000/topico_esportes/")
-        yield
-        self.driver.quit()
-
-    def test_titulo_pagina(self):
-        assert "Tópico: Esportes" in self.driver.title
-
-    def test_header_menu(self):
-        nav = self.driver.find_elements(By.CSS_SELECTOR, ".main-nav a")
-        textos = [n.text.lower() for n in nav]
-        for item in ["home","política","pernambuco","cultura"]:
-            assert item in textos
-
-    def test_secao_artigos(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        if artigos:
-            for a in artigos:
-                titulo = a.find_element(By.CSS_SELECTOR, ".card-title a").text
-                categoria = a.find_element(By.CSS_SELECTOR, ".card-category").text
-                data = a.find_element(By.CSS_SELECTOR, ".card-date").text if len(a.find_elements(By.CSS_SELECTOR, ".card-date"))>0 else ""
-                assert titulo != "" or "Nenhum Artigo de Esportes Encontrado" in a.text
-                assert categoria != "" or "Nenhum Artigo de Esportes Encontrado" in a.text
-        else:
-            msg = self.driver.find_element(By.TAG_NAME,"h2").text
-            assert "Nenhum Artigo de Esportes Encontrado" in msg
-    def test_artigos_resumo(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            if a.find_elements(By.CSS_SELECTOR, ".card-summary"):
-                resumo = a.find_element(By.CSS_SELECTOR, ".card-summary").text
-                assert resumo.strip() != ""
-    def test_artigos_categoria_esportes(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            categoria = a.find_element(By.CSS_SELECTOR, ".card-category").text
-            assert categoria.upper() == "ESPORTES"
-    def test_datas_artigos(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            data = a.find_element(By.CSS_SELECTOR, ".card-date").text
-            assert "Publicado em:" in data
-            assert "/" in data
-            assert ":" in data
-
-class Test_topico_pernambuco:
-    @pytest.fixture(scope="class", autouse=True)
-    def setup_class(self):
-        opts = Options()
-        opts.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=opts)
-        self.driver.get("http://127.0.0.1:8000/")
-
-    def teardown_class(self):
-        self.driver.quit()
-
-    def test_titulo_pagina(self):
-        assert "Tópico: Pernambuco" in self.driver.title
-
-    def test_header_menu(self):
-        nav = self.driver.find_elements(By.CSS_SELECTOR, ".main-nav a")
-        textos = [n.text.lower() for n in nav]
-        for item in ["home","política","esportes","cultura"]:
-            assert item in textos
-
-    def test_secao_artigos(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        if artigos:
-            for a in artigos:
-                titulo = a.find_element(By.CSS_SELECTOR, ".card-title a").text
-                categoria = a.find_element(By.CSS_SELECTOR, ".card-category").text
-                data = a.find_element(By.CSS_SELECTOR, ".card-date").text if len(a.find_elements(By.CSS_SELECTOR, ".card-date"))>0 else ""
-                assert titulo != "" or "Nenhum Artigo de Pernambuco Encontrado" in a.text
-                assert categoria != "" or "Nenhum Artigo de Pernambuco Encontrado" in a.text
-        else:
-            msg = self.driver.find_element(By.TAG_NAME,"h2").text
-            assert "Nenhum Artigo de Pernambuco Encontrado" in msg
-            
-    def test_artigos_resumo(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            if a.find_elements(By.CSS_SELECTOR, ".card-summary"):
-                resumo = a.find_element(By.CSS_SELECTOR, ".card-summary").text
-                assert resumo.strip() != ""
-
-    def test_artigos_categoria_pernambuco(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            categoria = a.find_element(By.CSS_SELECTOR, ".card-category").text
-            assert categoria.upper() == "PERNAMBUCO" 
-
-    def test_datas_artigos(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        for a in artigos:
-            data = a.find_element(By.CSS_SELECTOR, ".card-date").text
-            assert "Publicado em:" in data
-            assert "/" in data
-            assert ":" in data          
-
-class Test_topico_politica:
-    @pytest.fixture(scope="class", autouse=True)
-    def setup_class(self):
-        opts = Options()
-        opts.add_argument("--headless")
-        self.driver = webdriver.Chrome(options=opts)
-        self.driver.get("http://127.0.0.1:8000/topico_politica/")
-        yield
-        self.driver.quit()
-
-    def test_titulo_pagina(self):
-        assert "Tópico: Política" in self.driver.title
-
-    def test_header_menu(self):
-        nav = self.driver.find_elements(By.CSS_SELECTOR, ".main-nav a")
-        textos = [n.text.lower() for n in nav]
-        for item in ["home","pernambuco","esportes","cultura"]:
-            assert item in textos
-
-    def test_secao_artigos(self):
-        artigos = self.driver.find_elements(By.CSS_SELECTOR, ".card .card-content")
-        if artigos:
-            for a in artigos:
-                titulo = a.find_element(By.CSS_SELECTOR, ".card-title a").text
-                categoria = a.find_element(By.CSS_SELECTOR, ".card-category").text
-                data = a.find_element(By.CSS_SELECTOR, ".card-date").text if len(a.find_elements(By.CSS_SELECTOR, ".card-date"))>0 else ""
-                assert titulo != "" or "Nenhum Artigo de Política Encontrado" in a.text
-                assert categoria != "" or "Nenhum Artigo de Política Encontrado" in a.text
-        else:
-            msg = self.driver.find_element(By.TAG_NAME,"h2").text
-            assert "Nenhum Artigo de Política Encontrado" in msg
-
-
-class conteudo_contexto_Page:
-    def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
-
-    def abrir(self, id_artigo):
-        self.driver.get(f"http://localhost:8000/artigo/{id_artigo}/contexto/")
-
-    def obter_titulo(self):
-        return self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "h1"))).text
-
-    def obter_secao(self):
-        try:
-            return self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "h2"))).text
-        except:
-            return None
-
-    def obter_links(self):
-        descricoes = self.driver.find_elements(By.CSS_SELECTOR, "ul li p")
-        return [d.text for d in descricoes]
-
-    def obter_mensagem_vazia(self):
-        return "Nenhum contexto adicional encontrado" in self.driver.page_source
-
-class Test_conteudo_de_contexto:
-    @pytest.fixture(scope="class", autouse=True)
-    def setup_class(self):
-        opts = Options()
-        opts.add_argument("--headless")
-        opts.add_argument("--no-sandbox")
-        opts.add_argument("--disable-dev-shm-usage")
-        self.driver = webdriver.Chrome(options=opts)
-        yield
-        self.driver.quit()
-
-    @patch("app1.views.gerar_contexto")
-    def test_exibe_links_de_contexto(self, mock_gerar_contexto):
-        mock_gerar_contexto.return_value = {
-            "secao": "Entenda o Contexto",
-            "links": [
-                {"titulo": "História do tema", "url": "https://pt.wikipedia.org/wiki/Exemplo", "descricao": "Explica o contexto histórico do artigo."},
-                {"titulo": "Análise econômica", "url": "https://exemplo.com/economia", "descricao": "Aborda os impactos econômicos mencionados."}
-            ]
-        }
-        page = conteudo_contexto_Page(self.driver)
-        page.abrir(1)
-        titulo = page.obter_titulo()
-        assert titulo != ""
-        secao = page.obter_secao()
-        assert "Entenda o Contexto" in secao
-        def obter_links(self):
-            return self.driver.find_elements(By.CSS_SELECTOR, "ul li a")
-
-    @patch("app1.views.gerar_contexto")
-    def test_sem_links_de_contexto(self, mock_gerar_contexto):
-        mock_gerar_contexto.return_value = {"secao": "", "links": []}
-        page = conteudo_contexto_Page(self.driver)
-        page.abrir(1)
-        assert page.obter_mensagem_vazia()
-
-class login_Page:
-    def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
-
-    def abrir(self):
-        self.driver.get("http://localhost:8000/login/")
-
-    def obter_titulo_principal(self):
-        return self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "login-main-title"))).text
-
-    def obter_titulo_beneficios(self):
-        return self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "login-benefits-title"))).text
-
-    def obter_botoes(self):
-        return self.driver.find_elements(By.CSS_SELECTOR, ".login-btn-primary, .login-btn-secondary")
-
-    def obter_texto_legal(self):
-        return self.driver.find_element(By.CLASS_NAME, "login-legal-text").text
-
-    def obter_lista_beneficios(self):
-        itens = self.driver.find_elements(By.CSS_SELECTOR, ".benefit-list li")
-        return [i.text for i in itens]
-
-    def clicar_criar_conta(self):
-        self.driver.find_element(By.CLASS_NAME, "login-btn-primary").click()
-
-    def clicar_entrar(self):
-        self.driver.find_element(By.CLASS_NAME, "login-btn-secondary").click()
-
-class login_existente_Page:
-    def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
-
-    def abrir(self):
-        self.driver.get("http://localhost:8000/login_existente/")
-
-    def obter_titulo(self):
-        return self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "h1"))).text
-
-    def obter_botao_voltar(self):
-        return self.driver.find_element(By.CLASS_NAME, "back-btn")
-
-    def obter_mensagens_erro(self):
-        erros = self.driver.find_elements(By.CLASS_NAME, "error-messages")
-        return [e.text for e in erros] if erros else []
-
-    def preencher_login(self, valor):
-        campo = self.driver.find_element(By.ID, "id_login")
-        campo.clear()
-        campo.send_keys(valor)
-
-    def preencher_email(self, valor):
-        campo = self.driver.find_element(By.ID, "id_email")
-        campo.clear()
-        campo.send_keys(valor)
-
-    def preencher_senha(self, valor):
-        campo = self.driver.find_element(By.ID, "id_senha")
-        campo.clear()
-        campo.send_keys(valor)
-
-    def clicar_entrar(self):
-        self.driver.find_element(By.CLASS_NAME, "btn-form-submit").click()
-
