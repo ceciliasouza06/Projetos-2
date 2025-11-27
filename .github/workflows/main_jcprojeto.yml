@@ -1,5 +1,3 @@
-# Docs: https://github.com/Azure/webapps-deploy
-
 name: Build and deploy Python app to Azure Web App - lumenproject
 
 on:
@@ -23,13 +21,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Só pra garantir que as libs instalam sem erro
+      # Instala as dependências só pra garantir que o requirements.txt está ok
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Gera o ZIP com o código (sem venv, .git, etc.)
+      # Gera o ZIP com o código (sem venv, .git, .github etc.)
       - name: Zip artifact for deployment
         run: |
           zip -r release.zip . \
@@ -45,7 +43,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write
       contents: read
 
     steps:
@@ -57,16 +54,10 @@ jobs:
       - name: Check artifact
         run: ls -R
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FB27835AFA844A349BC4F7C55F2B1E1F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_114A337D71554EA380E122C848FFB05F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B224687249BE41CEBC7D37376D044432 }}
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'lumenproject-bngwcwejdgevhjbt'   # <-- nome do seu App Service
+          app-name: 'lumenproject-bngwcwejdgevhjbt'   # nome do seu App Service
           slot-name: 'Production'
           package: release.zip
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_LUMENPROJECT }}
