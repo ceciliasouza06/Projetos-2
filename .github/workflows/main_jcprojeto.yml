@@ -27,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Gera o ZIP com o código (sem venv, .git, .github etc.)
+      # Gera o ZIP com o código (sem venv, .git, .github, etc.)
       - name: Zip artifact for deployment
         run: |
           zip -r release.zip . \
@@ -57,7 +57,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'lumenproject-bngwcwejdgevhjbt'   # nome do seu App Service
+          app-name: 'lumenproject-bngwcwejdgevhjbt'   # nome do App Service
           slot-name: 'Production'
           package: release.zip
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_LUMENPROJECT }}
