@@ -1,7 +1,6 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+# Docs: https://github.com/Azure/webapps-deploy
 
-name: Build and deploy Python app to Azure Web App - jcprojeto
+name: Build and deploy Python app to Azure Web App - lumenproject
 
 on:
   push:
@@ -13,35 +12,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Required for actions/checkout
+      contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python version
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.11'
 
-      # ✅ Cria ambiente virtual e instala dependências
-      - name: Create virtual environment and install dependencies
+      # Só pra garantir que as libs instalam sem erro
+      - name: Install dependencies
         run: |
-          python -m venv antenv
-          source antenv/bin/activate
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 🧹 Remove arquivos desnecessários antes do deploy
-      - name: Clean unnecessary files
-        run: |
-          rm -f db.sqlite3
-          rm -f .env
-
-      # 📦 Compacta o app (gera release.zip)
+      # Gera o ZIP com o código (sem venv, .git, etc.)
       - name: Zip artifact for deployment
-        run: zip -r release.zip ./* -x "antenv/*"
+        run: |
+          zip -r release.zip . \
+            -x "venv/*" "antenv/*" ".git/*" ".github/*" "__pycache__/*"
 
-      # ⬆️ Envia o artefato pro próximo job
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: python-app
@@ -60,7 +54,6 @@ jobs:
         with:
           name: python-app
 
-      # 🧾 Lista pra confirmar que o release.zip foi baixado
       - name: Check artifact
         run: ls -R
 
@@ -71,11 +64,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_114A337D71554EA380E122C848FFB05F }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B224687249BE41CEBC7D37376D044432 }}
 
-      # 🚀 Faz o deploy usando o zip baixado
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'jcprojeto'
+          app-name: 'lumenproject-bngwcwejdgevhjbt'   # <-- nome do seu App Service
           slot-name: 'Production'
           package: release.zip
-
