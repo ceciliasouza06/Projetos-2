@@ -5,9 +5,8 @@ from .models import Artigos, Progresso_diario, Progresso
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from gtts import gTTS #tem que baixar essa biblioteca do google
-import io #manipulação de arquivos em memoria ram
-# Create your views here.
+from gtts import gTTS  # tem que baixar essa biblioteca do google
+import io  # manipulação de arquivos em memoria ram
 from django.utils import timezone
 from app1.utils.ai import gerar_contexto
 from django.contrib.auth import logout
@@ -17,155 +16,199 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib import messages
 
+
 def sugerir_leitura(request, artigo_id):
-    artigo_atual_id =artigo_id
-    artigo_atual=Artigos.objects.get(id=artigo_atual_id)
-    categoria=artigo_atual.categoria
-    sugestoes=Artigos.objects.order_by('-data_publicacao').filter(categoria=categoria).exclude(id=artigo_atual_id)[:5]
-    context={'artigo_atual':artigo_atual,'sugestoes':sugestoes}
-    return render(request,'app1/sugestao.html',context)
+    artigo_atual_id = artigo_id
+    artigo_atual = Artigos.objects.get(id=artigo_atual_id)
+    categoria = artigo_atual.categoria
+    sugestoes = (
+        Artigos.objects.order_by("-data_publicacao")
+        .filter(categoria=categoria)
+        .exclude(id=artigo_atual_id)[:5]
+    )
+    context = {"artigo_atual": artigo_atual, "sugestoes": sugestoes}
+    return render(request, "app1/sugestao.html", context)
+
 
 def home_page(request):
-    manchete_principal = Artigos.objects.order_by('-data_publicacao').first()
+    manchete_principal = Artigos.objects.order_by("-data_publicacao").first()
     mais_recentes = []
     if manchete_principal:
-        mais_recentes = Artigos.objects.order_by('-data_publicacao').exclude(id=manchete_principal.id)[:6]
+        mais_recentes = (
+            Artigos.objects.order_by("-data_publicacao")
+            .exclude(id=manchete_principal.id)[:6]
+        )
     else:
-        mais_recentes = Artigos.objects.order_by('-data_publicacao')[:6]
-    
-    artigos_opiniao = Artigos.objects.filter(categoria='Opinião').order_by('-data_publicacao')[:4]
-    artigos_politica = Artigos.objects.filter(categoria='Política').order_by('-data_publicacao')[:4]
-    
-    # ✅ ADICIONE ESTA PARTE AQUI:
+        mais_recentes = Artigos.objects.order_by("-data_publicacao")[:6]
+
+    artigos_opiniao = Artigos.objects.filter(categoria="Opinião").order_by(
+        "-data_publicacao"
+    )[:4]
+    artigos_politica = Artigos.objects.filter(categoria="Política").order_by(
+        "-data_publicacao"
+    )[:4]
+
     # Carrossel "De seu interesse"
     artigos_interesse = []
     if request.user.is_authenticated:
         # Pega favoritos do usuário
         favoritos = request.user.artigos_favoritos.all()
-        
+
         # Pega artigos lidos pelo usuário
         artigos_lidos_ids = Progresso.objects.filter(
-            user=request.user, 
-            completado=True
-        ).values_list('artigo_id', flat=True)
-        
+            user=request.user, completado=True
+        ).values_list("artigo_id", flat=True)
+
         # Conta categorias dos favoritos e lidos
         categorias_count = {}
         for artigo in favoritos:
-            categorias_count[artigo.categoria] = categorias_count.get(artigo.categoria, 0) + 1
-        
+            categorias_count[artigo.categoria] = categorias_count.get(
+                artigo.categoria, 0
+            ) + 1
+
         artigos_lidos = Artigos.objects.filter(id__in=artigos_lidos_ids)
         for artigo in artigos_lidos:
-            categorias_count[artigo.categoria] = categorias_count.get(artigo.categoria, 0) + 1
-        
+            categorias_count[artigo.categoria] = categorias_count.get(
+                artigo.categoria, 0
+            ) + 1
+
         # Se tem categorias preferidas, busca artigos dessas categorias
         if categorias_count:
             # Ordena categorias por quantidade (mais lida/favoritada primeiro)
-            categorias_ordenadas = sorted(categorias_count.items(), key=lambda x: x[1], reverse=True)
+            categorias_ordenadas = sorted(
+                categorias_count.items(), key=lambda x: x[1], reverse=True
+            )
             categoria_favorita = categorias_ordenadas[0][0]
-            
+
             # Busca 4 artigos da categoria favorita (excluindo os já favoritados/lidos)
-            ids_excluir = list(favoritos.values_list('id', flat=True)) + list(artigos_lidos_ids)
-            artigos_interesse = Artigos.objects.filter(
-                categoria=categoria_favorita
-            ).exclude(
-                id__in=ids_excluir
-            ).order_by('-data_publicacao')[:4]
-    
-    # Se não tem artigos de interesse (usuário não logado ou sem histórico), mostra artigos recentes variados
+            ids_excluir = list(favoritos.values_list("id", flat=True)) + list(
+                artigos_lidos_ids
+            )
+            artigos_interesse = (
+                Artigos.objects.filter(categoria=categoria_favorita)
+                .exclude(id__in=ids_excluir)
+                .order_by("-data_publicacao")[:4]
+            )
+
+    # Se não tem artigos de interesse (usuário não logado ou sem histórico),
+    # mostra artigos recentes variados
     if not artigos_interesse:
-        artigos_interesse = Artigos.objects.order_by('-data_publicacao')[:4]
-    
+        artigos_interesse = Artigos.objects.order_by("-data_publicacao")[:4]
+
     context = {
-        'manchete_principal': manchete_principal,
-        'mais_recentes': mais_recentes,
-        'artigos_opiniao': artigos_opiniao,
-        'artigos_politica': artigos_politica,
-        'artigos_interesse': artigos_interesse,  # ✅ ADICIONE ESTA LINHA
+        "manchete_principal": manchete_principal,
+        "mais_recentes": mais_recentes,
+        "artigos_opiniao": artigos_opiniao,
+        "artigos_politica": artigos_politica,
+        "artigos_interesse": artigos_interesse,
     }
-    return render(request, 'app1/home.html', context)
+    return render(request, "app1/home.html", context)
 
-def bullets(request,artigo_id):
-    bullets=Artigos.objects.get(id=artigo_id).bullets.all()
-    context={'bullets':bullets}
-    return render(request,'app1/bullets.html',context)
 
-def artigo_audio(request, artigo_id): 
-    artigo = get_object_or_404(Artigos,id=artigo_id)
+def bullets(request, artigo_id):
+    bullets = Artigos.objects.get(id=artigo_id).bullets.all()
+    context = {"bullets": bullets}
+    return render(request, "app1/bullets.html", context)
+
+
+def artigo_audio(request, artigo_id):
+    artigo = get_object_or_404(Artigos, id=artigo_id)
     texto = artigo.conteudo
-    tts = gTTS(text=texto, lang='pt',slow=False)
+    tts = gTTS(text=texto, lang="pt", slow=False)
     buffer = io.BytesIO()
     tts.write_to_fp(buffer)
     buffer.seek(0)
-    return FileResponse(buffer,content_type='audio/mpeg')
-    
-    # n salva o audio no banco de dados, gera na hora e manda pro usuario, salvando no buffer, que é um arquivo em memoria ram(memoria volátil)
-    #quando o usuario fecha a pagina, o audio some, n fica salvo no servidor
+    return FileResponse(buffer, content_type="audio/mpeg")
+    # não salva o audio no banco de dados, gera na hora e manda pro usuario,
+    # salvando no buffer, que é um arquivo em memoria ram (memoria volátil).
+    # quando o usuario fecha a pagina, o audio some, n fica salvo no servidor
 
 
 def topico_politica(request):
-    artigos_politica = Artigos.objects.filter(categoria='Política').order_by('-data_publicacao')
-    context = {'artigos_politica': artigos_politica}
-    return render(request, 'app1/topico_politica.html', context)
+    artigos_politica = Artigos.objects.filter(categoria="Política").order_by(
+        "-data_publicacao"
+    )
+    context = {"artigos_politica": artigos_politica}
+    return render(request, "app1/topico_politica.html", context)
+
 
 def topico_pernambuco(request):
-    artigos_pernambuco = Artigos.objects.filter(categoria='Pernambuco').order_by('-data_publicacao')
-    context = {'artigos_pernambuco': artigos_pernambuco}
-    return render(request, 'app1/topico_pernambuco.html', context)
+    artigos_pernambuco = Artigos.objects.filter(categoria="Pernambuco").order_by(
+        "-data_publicacao"
+    )
+    context = {"artigos_pernambuco": artigos_pernambuco}
+    return render(request, "app1/topico_pernambuco.html", context)
+
 
 def topico_esportes(request):
-    artigos_esportes = Artigos.objects.filter(categoria='Esportes').order_by('-data_publicacao')
-    context = {'artigos_esportes': artigos_esportes}
-    return render(request, 'app1/topico_esportes.html', context)
+    artigos_esportes = Artigos.objects.filter(categoria="Esportes").order_by(
+        "-data_publicacao"
+    )
+    context = {"artigos_esportes": artigos_esportes}
+    return render(request, "app1/topico_esportes.html", context)
+
 
 def topico_cultura(request):
-    artigos_cultura = Artigos.objects.filter(categoria='Cultura').order_by('-data_publicacao')
-    context = {'artigos_cultura': artigos_cultura}
-    return render(request, 'app1/topico_cultura.html', context)
+    artigos_cultura = Artigos.objects.filter(categoria="Cultura").order_by(
+        "-data_publicacao"
+    )
+    context = {"artigos_cultura": artigos_cultura}
+    return render(request, "app1/topico_cultura.html", context)
 
 
 def exibir_artigo(request, artigo_id):
     flag = False
     artigo = get_object_or_404(Artigos, id=artigo_id)
     hoje = timezone.now().date()
+
     if request.user.is_authenticated:
         visitante = f"user_{request.user.id}"
     else:
         visitante = f"ip_{request.META.get('REMOTE_ADDR', 'anonimo')}"
+
     diario, created = Progresso_diario.objects.get_or_create(
         data=hoje,
-        visitante=visitante
+        visitante=visitante,
     )
-    if 'artigos_lidos' not in request.session:
-        request.session['artigos_lidos'] = []
-    if artigo_id not in request.session['artigos_lidos']:
+
+    if "artigos_lidos" not in request.session:
+        request.session["artigos_lidos"] = []
+
+    if artigo_id not in request.session["artigos_lidos"]:
         diario.artigos_lidos += 1
         diario.save()
-        request.session['artigos_lidos'].append(artigo_id)
+        request.session["artigos_lidos"].append(artigo_id)
         request.session.modified = True
+
     mensagem = ""
+
     if request.user.is_authenticated:
         progresso, created = Progresso.objects.get_or_create(
             user=request.user,
-            artigo=artigo
+            artigo=artigo,
         )
         if not progresso.completado:
             progresso.completado = True
             progresso.save()
+
     quantidade_de_artigos_lidos = diario.artigos_lidos
     if quantidade_de_artigos_lidos == 3:
         flag = True
-    artigos_lidos_na_sessao = len(request.session['artigos_lidos'])
+
+    artigos_lidos_na_sessao = len(request.session["artigos_lidos"])
     if artigos_lidos_na_sessao >= 1:
         mensagem = f"Você leu {artigos_lidos_na_sessao} artigos nesta sessão."
-    context = {'artigo': artigo, 'mensagem': mensagem, 'flag': flag}
-    return render(request, 'app1/exibir_artigo.html', context)
 
-def conteudo_de_contexto(request,id_artigo):
-    artigo=Artigos.objects.get(id=id_artigo)
-    contexto_gerado=gerar_contexto(artigo.conteudo)
-    context={'artigo':artigo,'contexto_gerado':contexto_gerado}
-    return render(request,'app1/conteudo_de_contexto.html',context)
+    context = {"artigo": artigo, "mensagem": mensagem, "flag": flag}
+    return render(request, "app1/exibir_artigo.html", context)
+
+
+def conteudo_de_contexto(request, id_artigo):
+    artigo = Artigos.objects.get(id=id_artigo)
+    contexto_gerado = gerar_contexto(artigo.conteudo)
+    context = {"artigo": artigo, "contexto_gerado": contexto_gerado}
+    return render(request, "app1/conteudo_de_contexto.html", context)
+
 
 def cadastro(request):
     errors = []
@@ -200,15 +243,17 @@ def cadastro(request):
     context = {"errors": errors, "username": username}
     return render(request, "app1/cadastro.html", context)
 
+
 def login_view(request):
-    return render(request, 'app1/login.html', {})
+    return render(request, "app1/login.html", {})
+
 
 def login_existente(request):
     errors = None
 
-    if request.method != 'POST':
+    if request.method != "POST":
         usuario = ""
-        email= ""
+        email = ""
         senha = ""
     else:
         usuario = request.POST.get("login")
@@ -219,30 +264,31 @@ def login_existente(request):
             user = authenticate(username=usuario, password=senha, email=email)
             if user is not None:
                 login(request, user)
-                return HttpResponseRedirect(reverse('home'))
+                return HttpResponseRedirect(reverse("home"))
             else:
                 errors = "Usuário ou senha inválidos."
         else:
             errors = "Preencha todos os campos."
 
     context = {
-        'usuario': usuario,
-        'senha': senha,
-        'errors': errors,
+        "usuario": usuario,
+        "senha": senha,
+        "errors": errors,
     }
-    return render(request, 'app1/login_existente.html', context)
+    return render(request, "app1/login_existente.html", context)
+
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse('home'))
+    return HttpResponseRedirect(reverse("home"))
 
 
-#--------------
+# --------------
 # Favoritar artigos
-#--------------
+# --------------
 
 
-@login_required #funcao feita por rafael
+@login_required
 def favoritar_artigo(request, artigo_id):
     artigo = get_object_or_404(Artigos, id=artigo_id)
     # Verifica se o usuário já favoritou este artigo
@@ -251,29 +297,36 @@ def favoritar_artigo(request, artigo_id):
     else:
         artigo.favoritos.add(request.user)
     # 'exibir_artigo' é o 'name' da sua URL que mostra o artigo
-    return redirect('exibir_artigo', artigo_id=artigo.id)
+    return redirect("exibir_artigo", artigo_id=artigo.id)
 
-@login_required 
+
+@login_required
 def meus_favoritos(request):
-    lista_favoritos = request.user.artigos_favoritos.all().order_by('-data_publicacao')
+    lista_favoritos = request.user.artigos_favoritos.all().order_by("-data_publicacao")
     context = {
-        'lista_favoritos': lista_favoritos
+        "lista_favoritos": lista_favoritos,
     }
-    return render(request, 'app1/meus_favoritos.html', context)
+    return render(request, "app1/meus_favoritos.html", context)
+
 
 @login_required
 def conteudos_com_Base_favoritos(request):
     favoritos = request.user.artigos_favoritos.all()
     if not favoritos.exists():
         return None
-    categorias = ['Esportes', 'Política', 'Cultura', 'Pernambuco']
+
+    categorias = ["Esportes", "Política", "Cultura", "Pernambuco"]
     contagens = [favoritos.filter(categoria=c).count() for c in categorias]
     indice_maior = contagens.index(max(contagens))
     categoria_sugerida = categorias[indice_maior]
-    sugestoes = Artigos.objects.filter(categoria=categoria_sugerida).order_by('-data_publicacao')[:5]
-    context={'sugestoes':sugestoes,'categoria':categoria_sugerida}
-    return render(request,'app1/conteudos_com_Base_favoritos.html',context)
 
+    sugestoes = (
+        Artigos.objects.filter(categoria=categoria_sugerida)
+        .order_by("-data_publicacao")[:5]
+    )
+
+    context = {"sugestoes": sugestoes, "categoria": categoria_sugerida}
+    return render(request, "app1/conteudos_com_Base_favoritos.html", context)
 
 
 # Função para obter artigos novos sugeridos com base nos favoritos do usuário + gmail
@@ -283,14 +336,20 @@ def enviar_email_sugestoes_html(user, artigos):
 
     categoria = artigos[0].categoria
 
-    html_content = render_to_string('emails/sugestoes.html', {
-        'user': user,
-        'categoria': categoria,
-        'artigos': artigos[:5],  # envia até 5 artigos
-        'artigo_url_base': 'https://seusite.com/artigo/',  # ajuste para seu domínio (no caso seria o dominio do jornal do comercio)
-    })
+    html_content = render_to_string(
+        "emails/sugestoes.html",
+        {
+            "user": user,
+            "categoria": categoria,
+            "artigos": artigos[:5],  # envia até 5 artigos
+            "artigo_url_base": "https://seusite.com/artigo/",  # ajuste para seu domínio
+        },
+    )
 
-    text_content = f"Olá {user.first_name or user.username}! Você tem novas notícias na categoria {categoria}."
+    text_content = (
+        f"Olá {user.first_name or user.username}! "
+        f"Você tem novas notícias na categoria {categoria}."
+    )
 
     email = EmailMultiAlternatives(
         subject=f"Novas notícias em {categoria} para você!",
@@ -303,18 +362,22 @@ def enviar_email_sugestoes_html(user, artigos):
     email.send()
     return True
 
+
 def artigos_novos_sugeridos(user):
     favoritos = user.artigos_favoritos.all()
     if not favoritos.exists():
         return []
 
-    categorias = ['Esportes', 'Política', 'Cultura', 'Pernambuco']
+    categorias = ["Esportes", "Política", "Cultura", "Pernambuco"]
     contagens = [favoritos.filter(categoria=c).count() for c in categorias]
     categoria_favorita = categorias[contagens.index(max(contagens))]
 
-    artigos = Artigos.objects.filter(categoria=categoria_favorita).order_by('-data_publicacao')[:10]
+    artigos = Artigos.objects.filter(categoria=categoria_favorita).order_by(
+        "-data_publicacao"
+    )[:10]
 
     return [artigo for artigo in artigos if artigo not in favoritos]
+
 
 @login_required
 def enviar_sugestoes_view(request):
@@ -326,8 +389,9 @@ def enviar_sugestoes_view(request):
     else:
         messages.info(request, "Não há novidades para enviar no momento.")
 
-    return redirect('home')
+    return redirect("home")
+
 
 @login_required
-def newsletter_signup (request):
-    return render(request,'app1/newsletter_signup.html',{})
+def newsletter_signup(request):
+    return render(request, "app1/newsletter_signup.html", {})

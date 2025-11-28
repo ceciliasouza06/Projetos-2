@@ -13,21 +13,61 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Carrega o arquivo .env que está na raiz do projeto
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vu(658w7!0v3e+ynpd-o8yo3pz%h^-=w!c5lrp#f-*8qg6##^f'
+# Feature flag para separar DEV e PROD
+TARGET_ENV = os.getenv('TARGET_ENV', 'Dev')
+NOT_PROD = not TARGET_ENV.lower().startswith('prod')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if NOT_PROD:
+    # AMBIENTE DE DESENVOLVIMENTO (sua máquina)
+    DEBUG = True
 
-ALLOWED_HOSTS = ['jcprojeto.azurewebsites.net', 'localhost', '127.0.0.1']
+    # SECRET_KEY original do projeto
+    SECRET_KEY = 'django-insecure-vu(658w7!0v3e+ynpd-o8yo3pz%h^-=w!c5lrp#f-*8qg6##^f'
 
+    # Em dev, só localhost
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+    # Banco padrão SQLite em DEV
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+else:
+    # AMBIENTE DE PRODUÇÃO (Azure)
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    DEBUG = os.getenv('DEBUG', '0').lower() in ['true', 't', '1']
+
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(' ')
+    CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(' ')
+
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', '0').lower() in [
+        'true', 't', '1']
+    if SECURE_SSL_REDIRECT:
+        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DBNAME'),
+            'HOST': os.environ.get('DBHOST'),
+            'USER': os.environ.get('DBUSER'),
+            'PASSWORD': os.environ.get('DBPASS'),
+            'OPTIONS': {'sslmode': 'require'},
+        }
+    }
 
 # Application definition
 
@@ -43,6 +83,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise logo após SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -71,18 +114,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lumen.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -101,7 +132,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -113,31 +143,42 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
 
+# pasta onde o collectstatic vai juntar os arquivos para produção (Azure)
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# pasta de arquivos estáticos do projeto (para CSS/JS/imagens)
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# WhiteNoise: servir arquivos estáticos comprimidos e versionados em produção
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 LOGIN_URL = 'login'
-LOGIN_REDIRECTR_URL = 'home'
+LOGIN_REDIRECT_URL = 'home'  # corrigido o nome
 LOGOUT_URL = 'home'
-load_dotenv()
+
+# Variáveis de ambiente (já carregadas lá em cima com load_dotenv)
 OPENAI_KEY = os.getenv('OPENAI_KEY')
 GEMINI_KEY = os.getenv('GEMINI_KEY')
 
-#email settings
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.getenv('EMAIL_USER')# Conta de email que enviará os emails
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')# Senha do aplicativo (App Password), NÃO é a senha normal do Gmail
-# Gerada em: https://myaccount.google.com/apppasswords
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER # Nome que aparecerá como remetente dos emails
+# Conta de email que enviará os emails
+EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')  # Senha de app do Gmail
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
