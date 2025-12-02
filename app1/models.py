@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 class Artigos(models.Model):
     titulo = models.CharField(max_length=100)
     categoria = models.CharField(max_length=100)
+    resumo = models.TextField(blank=True, default="")
+    imagem = models.URLField(max_length=500, blank=True, null=True)
     conteudo = models.TextField()
     data_publicacao = models.DateTimeField(auto_now_add=True)
     favoritos = models.ManyToManyField(User, related_name='artigos_favoritos', blank=True)

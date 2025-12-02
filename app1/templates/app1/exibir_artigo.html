@@ -2,106 +2,126 @@
 {% load static %}
 
 {% block content %}
-
-    <!-- Banner -->
+<div class="article-shell">
     {% if mensagem %}
     <div id="banner" class="banner-engajamento">
         {{ mensagem }}
     </div>
     {% endif %}
-<style>
-    .banner-engajamento {
-        opacity: 0; /* começa invisível */
-        transition: opacity 0.6s ease;
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color:rgb(0, 0, 0);
-        color: white;
-        padding: 12px 18px;
-        border-radius: 6px;
-        font-weight: bold;
-        z-index: 9999;
-    }
-    
-    .banner-engajamento.show {
-        opacity: 1; /* visível quando a classe show é adicionada */
-    }
-</style>
-    <main class="container">
-        {% if flag %}
-        <div class="article-flag">
-            <a href="{% url 'newsletter' %}" class="read-more">VEJA A NOSSA OPÇÃO NEWSLETTER</a>
+    {% if messages %}
+    <div class="banner-stack">
+        {% for message in messages %}
+        <div class="banner-engajamento show">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if flag %}
+    <div class="article-flag">
+        <a href="{% url 'newsletter' %}" class="chip-link">Assine nossa newsletter</a>
+    </div>
+    {% endif %}
+
+    <section class="article-hero">
+        <div class="article-header">
+            <div class="article-eyebrow">
+                <span class="eyebrow-label">De seu interesse</span>
+                <span class="eyebrow-divider">|</span>
+                <span class="eyebrow-category">{{ artigo.categoria }}</span>
+            </div>
+
+            <h1 class="article-title">{{ artigo.titulo }}</h1>
+
+            {% if artigo.resumo %}
+            <p class="article-subtitle">{{ artigo.resumo }}</p>
+            {% endif %}
+
+            <div class="article-meta-row">
+                <div class="author-block">
+                    <img src="{% static 'app1/assets/avatar.png' %}" alt="Autor" class="author-avatar">
+                    <div>
+                        <div class="author-name">Redação JC</div>
+                        <div class="author-role">Especial</div>
+                    </div>
+                </div>
+                <div class="article-actions-icons">
+                    {% if user.is_authenticated %}
+                    <form action="{% url 'favoritar_artigo' artigo.id %}" method="POST" class="icon-btn fav-form {% if user in artigo.favoritos.all %}active{% endif %}">
+                        {% csrf_token %}
+                        <button type="submit" aria-label="{% if user in artigo.favoritos.all %}Remover dos salvos{% else %}Salvar notícia{% endif %}">
+                            <i class="{% if user in artigo.favoritos.all %}fa-solid{% else %}fa-regular{% endif %} fa-bookmark"></i>
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="icon-btn" aria-label="Fazer login para salvar">
+                        <i class="fa-regular fa-bookmark"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if artigo.data_publicacao %}
+            <div class="article-pubinfo">
+                Publicado em {{ artigo.data_publicacao|date:"d/m/Y \\à\\s H\\hi" }}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if artigo.imagem %}
+        <div class="hero-media">
+            <img src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
         </div>
         {% endif %}
+    </section>
 
-        <div class="article-content">
+    <section class="article-body">
+        <div class="audio-chip">
+            <span class="audio-label"><i class="fa-solid fa-play"></i> Escute a matéria</span>
             <audio controls>
                 <source src="{% url 'artigo_audio' artigo.id %}" type="audio/mpeg">
                 Seu navegador não suporta áudio.
             </audio>
-
-            <h1>{{ artigo.titulo }}</h1>
-
-            {% if artigo.data_publicacao %}
-                <p class="card-date">Publicado em: {{ artigo.data_publicacao|date:"d de F, Y" }}</p>
-            {% endif %}
-
-            <p>{{ artigo.conteudo|safe }}</p> 
-
-            <hr>
-
-            {% if user.is_authenticated %}
-                <form action="{% url 'favoritar_artigo' artigo.id %}" method="POST" style="margin-bottom: 15px;">
-                    {% csrf_token %}
-                    
-                    {% if user in artigo.favoritos.all %}
-                        <button type="submit" style="background-color: #dc3545; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                            Desfavoritar
-                        </button>
-                    {% else %}
-                        <button type="submit" style="background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                            Favoritar
-                        </button>
-                    {% endif %}
-                </form>
-            {% else %}
-                <p style="margin-bottom: 15px;">
-                    Você precisa <a href="{% url 'login_existente' %}">fazer login</a> para favoritar este artigo.
-                </p>
-            {% endif %}
-            <div class="article-actions">
-                <h4>
-                    <a class="read-more" href="{% url 'sugestao' artigo.id %}">
-                        Sugestões de Leitura
-                    </a>
-                </h4>
-                <h4>
-                    <a class="read-more" href="{% url 'bullets' artigo.id %}">
-                        Ver Pontos Chave
-                    </a>
-                </h4>
-                <h4>
-                    <a class="read-more" href="{% url 'conteudo_de_contexto' artigo.id %}">
-                        Ver conteudo de contexto
-                    </a>
-                </h4>
-            </div>
         </div>
 
-    </main>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const banner = document.getElementById("banner");
-            if (banner) {
-                setTimeout(() => {
-                    banner.classList.add("show");
-                }, 200);
-                setTimeout(() => {
-                    banner.classList.remove("show");
-                }, 5200);
-            }
-        });
-    </script>
+        <div class="article-text">
+            {{ artigo.conteudo|safe }}
+        </div>
 
+        <div class="article-links">
+            <a class="chip-link" href="{% url 'sugestao' artigo.id %}">Sugestões de leitura</a>
+            <a class="chip-link" href="{% url 'bullets' artigo.id %}">Pontos chave</a>
+            <a class="chip-link" href="{% url 'conteudo_de_contexto' artigo.id %}">Conteúdo de contexto</a>
+        </div>
+    </section>
+
+    {% if relacionados %}
+    <section class="related-section">
+        <h3 class="section-heading">Leia também</h3>
+        <div class="related-list">
+            {% for rel in relacionados %}
+            <article class="related-card" {% if rel.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 75%, rgba(0,0,0,0.85) 100%), url('{{ rel.imagem }}');"{% endif %}>
+                <div class="related-overlay">
+                    <span class="card-category light">{{ rel.categoria|upper }}</span>
+                    <h4><a href="{% url 'exibir_artigo' rel.id %}">{{ rel.titulo }}</a></h4>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const banner = document.getElementById("banner");
+        if (banner) {
+            setTimeout(() => {
+                banner.classList.add("show");
+            }, 200);
+            setTimeout(() => {
+                banner.classList.remove("show");
+            }, 5200);
+        }
+    });
+</script>
 {% endblock content %}

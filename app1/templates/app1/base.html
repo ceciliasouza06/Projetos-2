@@ -96,17 +96,20 @@
         const indicators = document.querySelectorAll('.indicator');
         const container = document.querySelector('.stories-container');
 
-        if (slides.length > 0 && indicators.length > 0 && container) {
+        if (slides.length > 0 && container) {
             let currentSlide = 0;
             let startX = 0;
-            let isDragging = false;
+            let endX = 0;
+            const swipeThreshold = 40;
 
             function showSlide(index) {
                 slides.forEach(slide => slide.classList.remove('active'));
                 indicators.forEach(ind => ind.classList.remove('active'));
-                
+
                 slides[index].classList.add('active');
-                indicators[index].classList.add('active');
+                if (indicators[index]) {
+                    indicators[index].classList.add('active');
+                }
             }
 
             function nextSlide() {
@@ -127,28 +130,26 @@
                 });
             });
 
-            // Swipe touch
-            container.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                isDragging = true;
-            });
+            const start = (clientX) => {
+                startX = clientX;
+                endX = clientX;
+            };
 
-            container.addEventListener('touchend', (e) => {
-                if (!isDragging) return;
-                
-                const endX = e.changedTouches[0].clientX;
+            const end = () => {
                 const diff = startX - endX;
-
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                        nextSlide();
-                    } else {
-                        prevSlide();
-                    }
+                if (Math.abs(diff) > swipeThreshold) {
+                    diff > 0 ? nextSlide() : prevSlide();
                 }
-                
-                isDragging = false;
-            });
+            };
+
+            container.addEventListener('touchstart', (e) => start(e.touches[0].clientX), { passive: true });
+            container.addEventListener('touchmove', (e) => { endX = e.touches[0].clientX; }, { passive: true });
+            container.addEventListener('touchend', end);
+
+            container.addEventListener('mousedown', (e) => start(e.clientX));
+            container.addEventListener('mousemove', (e) => { if (startX) endX = e.clientX; });
+            container.addEventListener('mouseup', () => { end(); startX = 0; });
+            container.addEventListener('mouseleave', () => { startX = 0; });
         }
     });
     </script>

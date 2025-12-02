@@ -156,6 +156,8 @@ def topico_cultura(request):
     return render(request, "app1/topico_cultura.html", context)
 
 
+
+
 def exibir_artigo(request, artigo_id):
     flag = False
     artigo = get_object_or_404(Artigos, id=artigo_id)
@@ -197,12 +199,21 @@ def exibir_artigo(request, artigo_id):
 
     artigos_lidos_na_sessao = len(request.session["artigos_lidos"])
     if artigos_lidos_na_sessao >= 1:
-        mensagem = f"Você leu {artigos_lidos_na_sessao} artigos nesta sessão."
+        mensagem = f"Voc? leu {artigos_lidos_na_sessao} artigos nesta sess?o."
 
-    context = {"artigo": artigo, "mensagem": mensagem, "flag": flag}
+    relacionados = (
+        Artigos.objects.filter(categoria=artigo.categoria)
+        .exclude(id=artigo.id)
+        .order_by("-data_publicacao")[:3]
+    )
+
+    context = {
+        "artigo": artigo,
+        "mensagem": mensagem,
+        "flag": flag,
+        "relacionados": relacionados,
+    }
     return render(request, "app1/exibir_artigo.html", context)
-
-
 def conteudo_de_contexto(request, id_artigo):
     artigo = Artigos.objects.get(id=id_artigo)
     contexto_gerado = gerar_contexto(artigo.conteudo)
@@ -291,12 +302,13 @@ def logout_view(request):
 @login_required
 def favoritar_artigo(request, artigo_id):
     artigo = get_object_or_404(Artigos, id=artigo_id)
-    # Verifica se o usuário já favoritou este artigo
+    # Verifica se o usu?rio j? favoritou este artigo
     if artigo.favoritos.filter(id=request.user.id).exists():
         artigo.favoritos.remove(request.user)
+        messages.info(request, "Not?cia removida dos salvos.")
     else:
         artigo.favoritos.add(request.user)
-    # 'exibir_artigo' é o 'name' da sua URL que mostra o artigo
+        messages.success(request, "Not?cia salva em 'Salvos'.")
     return redirect("exibir_artigo", artigo_id=artigo.id)
 
 
