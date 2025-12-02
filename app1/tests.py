@@ -1,4 +1,4 @@
-from django.test import TestCase, Client, LiveServerTestCase
+from django.test import TestCase, Client, LiveServerTestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -7,8 +7,21 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
+from django.conf import settings
+
+middleware = list(getattr(settings, "MIDDLEWARE", []))
+settings.MIDDLEWARE = [
+    m for m in middleware
+    if "whitenoise.middleware.WhiteNoiseMiddleware" not in m
+]
+
+if getattr(settings, "STATICFILES_STORAGE", "") == "whitenoise.storage.CompressedManifestStaticFilesStorage":
+    settings.STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteBase(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -70,6 +83,9 @@ class TesteBase(LiveServerTestCase):
         self.assertNotIn("is-open", nav.get_attribute("class"))
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteTopicos(TestCase):
     def setUp(self):
         self.client = Client()
@@ -91,6 +107,9 @@ class TesteTopicos(TestCase):
         self.assertEqual(r.status_code, 200)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteSugestao(TestCase):
     def setUp(self):
         self.client = Client()
@@ -106,6 +125,9 @@ class TesteSugestao(TestCase):
         self.assertEqual(r.status_code, 200)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteBullets(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
@@ -143,6 +165,9 @@ class TesteBullets(LiveServerTestCase):
         self.assertIn("Bullet Selenium", body)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TestCadastro(TestCase):
     def setUp(self):
         self.client = Client()
@@ -167,6 +192,9 @@ class TestCadastro(TestCase):
         self.assertEqual(r.url, reverse("home"))
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteContexto(TestCase):
     def setUp(self):
         self.client = Client()
@@ -185,6 +213,9 @@ class TesteContexto(TestCase):
         self.assertEqual(r.status_code, 200)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TestNewsletter(TestCase):
     def setUp(self):
         self.client = Client()
@@ -203,6 +234,9 @@ class TestNewsletter(TestCase):
         self.assertEqual(r.status_code, 200)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteArtigo(TestCase):
     def setUp(self):
         self.client = Client()
@@ -219,6 +253,9 @@ class TesteArtigo(TestCase):
         self.assertContains(r, "Artigo Teste")
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteHome(TestCase):
     def setUp(self):
         self.client = Client()
@@ -230,6 +267,9 @@ class TesteHome(TestCase):
         self.assertContains(r, "Mais Recentes")
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteLogin(TestCase):
     def setUp(self):
         self.client = Client()
@@ -239,12 +279,18 @@ class TesteLogin(TestCase):
         self.assertContains(r, "Entrar")
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteLoginExistente(TestCase):
     def test_login_existente(self):
         r = Client().get(reverse("login_existente"))
         self.assertEqual(r.status_code, 200)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TesteFavoritos(TestCase):
     def setUp(self):
         self.client = Client()
@@ -271,6 +317,9 @@ class TesteFavoritos(TestCase):
         self.assertEqual(r.status_code, 302)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TestConteudosComBaseFavoritos(TestCase):
     def setUp(self):
         self.client = Client()
@@ -282,6 +331,9 @@ class TestConteudosComBaseFavoritos(TestCase):
         self.assertEqual(r.status_code, 200)
 
 
+@override_settings(
+    STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage"
+)
 class TestLogout(TestCase):
     def test_logout(self):
         client = Client()
