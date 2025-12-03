@@ -56,9 +56,12 @@ Este projeto foi desenvolvido utilizando **programação em par (pair programmin
 
 ## 🖥️ Screencast
 
-- [➡️ Clique aqui para acessar o screencast do narrado do CI/CD](Link)
+- [➡️ Clique aqui para acessar o screencast do narrado do CI/CD](https://youtu.be/4GISLIlxunM)
 - [➡️ Clique aqui para acessar o screencast do narrado do Site](Link)
 - [➡️ Clique aqui para acessar o screencast do Site](Link)
+
+
+
 ### 📄 Relatório Completo
 
 O detalhamento de cada sessão de programação em par, bem como a associação entre **commits** e **duplas**, está descrito no documento abaixo:
