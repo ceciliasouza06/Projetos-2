@@ -53,6 +53,12 @@
 
 Este projeto foi desenvolvido utilizando **programação em par (pair programming)** ao longo de todo o semestre, com revezamento dos papéis de _Driver_ e _Navigator_ entre os integrantes.
 
+
+## 🖥️ Screencast
+
+- [➡️ Clique aqui para acessar o screencast do narrado do CI/CD](Link)
+- [➡️ Clique aqui para acessar o screencast do narrado do Site](Link)
+- [➡️ Clique aqui para acessar o screencast do Site](Link)
 ### 📄 Relatório Completo
 
 O detalhamento de cada sessão de programação em par, bem como a associação entre **commits** e **duplas**, está descrito no documento abaixo:
