@@ -28,27 +28,33 @@
             </button>
         
             <a href="{% url 'home' %}" class="brand">
-                    <img src="{% static 'app1/assets/logo.png' %}" alt="Logo do Jornal do Commercio" class="header-logo" >
+                <img src="{% static 'app1/assets/logo.png' %}" alt="Logo do Jornal do Commercio" class="header-logo" >
+            </a>
+
+            <div class="header-actions">
+                <a class="flag-chip" href="{% url 'colecao_bandeiras' %}" title="Sua colecao de bandeiras">
+                    <span class="flag-chip-visual" {% if flag_progress_header.imagem_atual %}style="background-image: url('{% static flag_progress_header.imagem_atual %}');"{% endif %}>
+                        <span class="flag-chip-mask" style="width: {{ flag_progress_header.restante_percent }}%;"></span>
+                    </span>
+                    <span class="flag-chip-percent">{{ flag_progress_header.percent }}%</span>
                 </a>
 
-            <div class="header-login">
-                
-                {% if user.is_authenticated %}
-                    <span style="margin-right: 15px; color: #555;">Olá, {{ user.username }}!</span>
-                    <a href="{% url 'logout' %}" class="login-btn">Sair</a>
-                
-                {% else %}
-                    <a href="{% url 'login' %}" class="login-btn">
-                        <i class="fa-regular fa-user"></i>
-                    </a>
-                {% endif %}
-
+                <div class="header-login">
+                    {% if user.is_authenticated %}
+                        <span class="header-hello">Ola, {{ user.username }}!</span>
+                        <a href="{% url 'logout' %}" class="login-btn">Sair</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="login-btn">
+                            <i class="fa-regular fa-user"></i>
+                        </a>
+                    {% endif %}
+                </div>
             </div>
-            </div>
+        </div>
         <nav class="main-nav" id="main-nav">
                 <ul>
                     <li><a href="{% url 'topico_pernambuco' %}">Pernambuco</a></li>
-                    <li><a href="{% url 'topico_politica' %}">Política</a></li>
+                    <li><a href="{% url 'topico_politica' %}">Politica</a></li>
                     <li><a href="{% url 'topico_esportes' %}">Esportes</a></li>
                     <li><a href="{% url 'topico_cultura' %}">Cultura</a></li>
 
@@ -57,9 +63,9 @@
                         <a href="{% url 'meus_favoritos' %}" style="font-weight: bold; color: #333;">Meus Favoritos</a>
                     </li>
                     {% endif %}
-                    <li><a>Ao Vivo</a></li>
-                    <li><a>Rádio Jornal(Recife)</a></li>
-                    <li><a>Rádio Jornal(Interior)</a></li>
+                    <li><a href="{% url 'ao_vivo' %}">Ao Vivo</a></li>
+                    <li><a>Radio Jornal(Recife)</a></li>
+                    <li><a>Radio Jornal(Interior)</a></li>
                     <li><a>TV Jornal(Recife)</a></li>
                     <li><a>TV Jornal(Interior)</a></li>
                     <li><a href="{% url 'newsletter' %}">Newsletter</a></li>
@@ -73,7 +79,7 @@
     </main>
     <footer class="main-footer">
         <div class="container">
-            <p>&copy; 2025 JCPM. Reconstruído para fins acadêmicos.</p>
+            <p>&copy; 2025 JCPM. Reconstruido para fins academicos.</p>
         </div>
     </footer>
 
@@ -154,7 +160,7 @@
     });
     </script>
 
-    <!-- Barra de Navegação Inferior -->
+    <!-- Barra de Navegacao Inferior -->
 <nav class="bottom-nav">
     <a href="{% url 'home' %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
         <i class="fa-solid fa-house"></i>
@@ -166,7 +172,7 @@
         <span>Buscar</span>
     </a>
     
-    <a href="#" class="nav-item">
+    <a href="{% url 'ao_vivo' %}" class="nav-item {% if request.resolver_match.url_name == 'ao_vivo' %}active{% endif %}">
         <i class="fa-solid fa-tower-broadcast"></i>
         <span>Ao Vivo</span>
     </a>

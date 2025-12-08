@@ -15,6 +15,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib import messages
+from .utils.progress import montar_progresso_bandeiras
 
 
 def sugerir_leitura(request, artigo_id):
@@ -103,6 +104,11 @@ def home_page(request):
         "artigos_interesse": artigos_interesse,
     }
     return render(request, "app1/home.html", context)
+
+
+def colecao_bandeiras(request):
+    progresso_flags = montar_progresso_bandeiras(request)
+    return render(request, "app1/colecao_bandeiras.html", progresso_flags)
 
 
 def bullets(request, artigo_id):
@@ -257,6 +263,40 @@ def cadastro(request):
 
 def login_view(request):
     return render(request, "app1/login.html", {})
+
+
+def ao_vivo(request):
+    live_items = [
+        {
+            "titulo": "Radio Jornal - FM 90.3",
+            "origem": "Radio Jornal (interior)",
+            "embed_url": "https://www.youtube.com/embed/live_stream?channel=UC8u0NiyHh6ZzqbmS_MyF6mA",
+        },
+        {
+            "titulo": "Radio Jornal (Recife)",
+            "origem": "Radio Jornal (Recife)",
+            "embed_url": "https://www.youtube.com/embed/live_stream?channel=UCV1b-38tvz3rVln1zC_gJiw",
+        },
+        {
+            "titulo": "TV Jornal (Recife)",
+            "origem": "TV Jornal (Recife)",
+            "embed_url": "https://www.youtube.com/embed/live_stream?channel=UCo4KAd86PX3cKWf0E0V2GxQ",
+        },
+        {
+            "titulo": "TV Jornal (interior)",
+            "origem": "TV Jornal (interior)",
+            "embed_url": "https://www.youtube.com/embed/live_stream?channel=UCYKPNC7kwh28ykVfoCkbHgQ",
+        },
+    ]
+
+    hero = live_items[0] if live_items else None
+    playlist = live_items[1:] if hero else live_items
+
+    context = {
+        "hero": hero,
+        "live_items": playlist,
+    }
+    return render(request, "app1/ao_vivo.html", context)
 
 
 def login_existente(request):

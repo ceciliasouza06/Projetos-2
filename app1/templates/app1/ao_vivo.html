@@ -1,0 +1,34 @@
+{% extends 'app1/base.html' %}
+{% block title %}Ao vivo{% endblock %}
+{% block content %}
+<div class="home-shell live-page">
+    <section class="section-block live-section">
+        <div class="section-title-row live-title">
+            <h3 class="section-heading">Ao vivo</h3>
+            <span class="live-dot"></span>
+        </div>
+        {% if hero %}
+        <div class="live-embed large">
+            <iframe src="{{ hero.embed_url }}" title="{{ hero.titulo }}" frameborder="0" allowfullscreen></iframe>
+        </div>
+        {% endif %}
+
+        <div class="live-list">
+            {% for item in live_items %}
+            <article class="live-card horizontal">
+                <div class="live-thumb fallback">
+                    <i class="fa-solid fa-play"></i>
+                </div>
+                <div class="live-meta">
+                    <p class="live-title">{{ item.titulo }}</p>
+                    <span>{{ item.origem }}</span>
+                    <a class="cta" href="{{ item.embed_url }}" target="_blank" rel="noopener">Assistir</a>
+                </div>
+            </article>
+            {% empty %}
+            <p class="empty">Nenhuma transmissao configurada.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
