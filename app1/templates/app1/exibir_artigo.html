@@ -36,10 +36,9 @@
 
             <div class="article-meta-row">
                 <div class="author-block">
-                    <img src="{% static 'app1/assets/avatar.png' %}" alt="Autor" class="author-avatar">
-                    <div>
-                        <div class="author-name">Redação JC</div>
-                        <div class="author-role">Especial</div>
+                    <img src="{% static 'app1/assets/maria.webp' %}" alt="Autor" class="author-avatar">
+                    <div class="author-name">
+                        Por <span class="author-highlight">Maria Clara Trajano</span>
                     </div>
                 </div>
                 <div class="article-actions-icons">
@@ -55,6 +54,9 @@
                         <i class="fa-regular fa-bookmark"></i>
                     </a>
                     {% endif %}
+                    <a href="#" class="icon-btn share-btn" aria-label="Compartilhar esta notícia">
+                        <i class="fa fa-share-alt"></i>
+                    </a>
                 </div>
             </div>
 
