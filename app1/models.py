@@ -48,5 +48,15 @@ class Progresso_diario(models.Model):
     def __str__(self):
         return f"{self.visitante} - {self.data} - {self.artigos_lidos} artigos lidos"
 
-    
+
+class Notificacao(models.Model):
+    titulo = models.CharField(max_length=160)
+    categoria = models.CharField(max_length=80)
+    resumo = models.TextField(blank=True, default="")
+    imagem = models.URLField(max_length=500, blank=True, null=True)
+    artigo = models.ForeignKey(Artigos, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.titulo
     

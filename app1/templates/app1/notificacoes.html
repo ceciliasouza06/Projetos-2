@@ -1,0 +1,74 @@
+{% extends 'app1/base.html' %}
+{% block title %}Notificações{% endblock %}
+{% block content %}
+<div class="notifications-shell">
+    <div class="notifications-hero">
+        <h2>Notificações</h2>
+        <p>Você tem <a class="notification-anchor" href="#hoje">{{ novas_count }} novas notificações</a></p>
+    </div>
+
+    {% if novas %}
+    <section class="notification-group" id="hoje">
+        <h3>Hoje</h3>
+        {% for item in novas %}
+        <article class="notification-card">
+            <div class="notification-meta">
+                <span class="red-dot"></span>
+                <span>{{ item.categoria }}</span>
+            </div>
+            <div class="notification-body">
+                <h4 class="notification-title">{{ item.titulo }}</h4>
+                <p class="notification-summary">{{ item.resumo }}</p>
+            </div>
+            <div class="notification-foot">
+                <div class="notification-actions">
+                    {% if item.artigo %}
+                        <a class="cta" href="{% url 'exibir_artigo' item.artigo.id %}">Ler noticia completa</a>
+                    {% else %}
+                        <a class="cta" href="#" aria-disabled="true">Ler noticia completa</a>
+                    {% endif %}
+                </div>
+                {% if item.imagem %}
+                <div class="notification-media" style="background-image: url('{{ item.imagem }}');"></div>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if antigas %}
+    <section class="notification-group">
+        <h3>Recentes</h3>
+        {% for item in antigas %}
+        <article class="notification-card">
+            <div class="notification-meta">
+                <span class="red-dot"></span>
+                <span>{{ item.categoria }}</span>
+            </div>
+            <div class="notification-body">
+                <h4 class="notification-title">{{ item.titulo }}</h4>
+                <p class="notification-summary">{{ item.resumo }}</p>
+            </div>
+            <div class="notification-foot">
+                <div class="notification-actions">
+                    {% if item.artigo %}
+                        <a class="cta" href="{% url 'exibir_artigo' item.artigo.id %}">Ler noticia completa</a>
+                    {% else %}
+                        <a class="cta" href="#" aria-disabled="true">Ler noticia completa</a>
+                    {% endif %}
+                </div>
+                {% if item.imagem %}
+                <div class="notification-media" style="background-image: url('{{ item.imagem }}');"></div>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if not novas and not antigas %}
+        <p class="empty">Sem notificações no momento.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'app1/base.html' %}
+{% block title %}Categorias{% endblock %}
+{% block content %}
+<div class="categories-shell">
+    <h2 class="page-title">Categorias</h2>
+
+    {% for bloco in categorias %}
+    <section class="category-block">
+        <p class="category-label">{{ bloco.nome }}</p>
+
+        {% if bloco.artigos %}
+        {% with destaque=bloco.artigos.0 %}
+        <article class="category-hero" {% if destaque.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%), url('{{ destaque.imagem }}');"{% endif %}>
+            <div class="category-hero-body">
+                <span class="card-category light">{{ destaque.categoria }}</span>
+                <h4>{{ destaque.titulo }}</h4>
+                <p>{{ destaque.resumo }}</p>
+                <a class="cta" href="{% url 'exibir_artigo' destaque.id %}">Ler noticia completa</a>
+            </div>
+        </article>
+        {% endwith %}
+
+        {% if bloco.artigos|length > 1 %}
+        <div class="category-cards">
+            {% for artigo in bloco.artigos|slice:"1:" %}
+            <article class="category-card">
+                <div class="card-body">
+                    <span class="card-category">{{ artigo.categoria }}</span>
+                    <h5>{{ artigo.titulo }}</h5>
+                    <p>{{ artigo.resumo }}</p>
+                </div>
+                <div class="thumb" {% if artigo.imagem %}style="background-image: url('{{ artigo.imagem }}');"{% endif %}></div>
+            </article>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        <p class="empty">Sem artigos nesta categoria.</p>
+        {% endif %}
+    </section>
+    {% empty %}
+    <p class="empty">Nenhuma categoria encontrada.</p>
+    {% endfor %}
+</div>
+{% endblock %}

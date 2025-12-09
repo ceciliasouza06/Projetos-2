@@ -1,7 +1,7 @@
 from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from .models import Artigos, Progresso_diario, Progresso
+from .models import Artigos, Progresso_diario, Progresso, Notificacao
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
@@ -162,6 +162,40 @@ def topico_cultura(request):
     return render(request, "app1/topico_cultura.html", context)
 
 
+
+
+
+
+def categorias(request):
+    categorias_qs = (
+        Artigos.objects.order_by("categoria")
+        .values_list("categoria", flat=True)
+        .distinct()
+    )
+    blocos = []
+    for cat in categorias_qs:
+        artigos = list(
+            Artigos.objects.filter(categoria=cat).order_by("-data_publicacao")[:4]
+        )
+        blocos.append({"nome": cat, "artigos": artigos})
+
+    context = {"categorias": blocos}
+    return render(request, "app1/categorias.html", context)
+
+
+def notificacoes(request):
+    notificacoes_qs = Notificacao.objects.order_by("-created_at")
+    hoje = timezone.now().date()
+    novas = notificacoes_qs.filter(created_at__date=hoje)
+    antigas = notificacoes_qs.exclude(created_at__date=hoje)
+
+    context = {
+        "novas": novas,
+        "antigas": antigas,
+        "total": notificacoes_qs.count(),
+        "novas_count": novas.count(),
+    }
+    return render(request, "app1/notificacoes.html", context)
 
 
 def exibir_artigo(request, artigo_id):

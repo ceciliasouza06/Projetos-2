@@ -25,4 +25,6 @@ urlpatterns = [
     path('enviar_sugestoes/', views.enviar_sugestoes_view, name='enviar_sugestoes'),
     path('newsletter_signup/', views.newsletter_signup, name='newsletter'),
     path('conteudos_com_Base_favoritos/', views.conteudos_com_Base_favoritos, name='conteudos_com_Base_favoritos'),
+    path('categorias/', views.categorias, name='categorias'),
+    path('notificacoes/', views.notificacoes, name='notificacoes'),
 ]

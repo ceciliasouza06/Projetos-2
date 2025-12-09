@@ -51,26 +51,62 @@
                 </div>
             </div>
         </div>
-        <nav class="main-nav" id="main-nav">
-                <ul>
-                    <li><a href="{% url 'topico_pernambuco' %}">Pernambuco</a></li>
-                    <li><a href="{% url 'topico_politica' %}">Politica</a></li>
-                    <li><a href="{% url 'topico_esportes' %}">Esportes</a></li>
-                    <li><a href="{% url 'topico_cultura' %}">Cultura</a></li>
+        <nav class="main-nav" id="main-nav" aria-hidden="true">
+            <button id="nav-close" class="nav-close" aria-label="Fechar menu">×</button>
+            <div class="nav-section nav-section-top">
+                <a class="nav-link nav-categories" href="{% url 'categorias' %}">
+                    <span>Categorias</span>
+                    <span class="nav-caret">▾</span>
+                </a>
+            </div>
 
-                    {% if user.is_authenticated %}
-                    <li style="background-color: #f0f0f0;">
-                        <a href="{% url 'meus_favoritos' %}" style="font-weight: bold; color: #333;">Meus Favoritos</a>
-                    </li>
-                    {% endif %}
-                    <li><a href="{% url 'ao_vivo' %}">Ao Vivo</a></li>
-                    <li><a>Radio Jornal(Recife)</a></li>
-                    <li><a>Radio Jornal(Interior)</a></li>
-                    <li><a>TV Jornal(Recife)</a></li>
-                    <li><a>TV Jornal(Interior)</a></li>
-                    <li><a href="{% url 'newsletter' %}">Newsletter</a></li>
+            <ul class="nav-list">
+                <li><a href="{% url 'topico_pernambuco' %}">Pernambuco</a></li>
+                <li><a href="{% url 'topico_politica' %}">Politica</a></li>
+                <li><a href="{% url 'topico_esportes' %}">Esportes</a></li>
+                <li><a href="{% url 'topico_cultura' %}">Cultura</a></li>
+
+                {% if user.is_authenticated %}
+                <li class="nav-highlight">
+                    <a href="{% url 'meus_favoritos' %}">Meus Favoritos</a>
+                </li>
+                {% endif %}
+                <li><a href="{% url 'ao_vivo' %}">Ao Vivo</a></li>
+                <li><a>Radio Jornal(Recife)</a></li>
+                <li><a>Radio Jornal(Interior)</a></li>
+                <li><a>TV Jornal(Recife)</a></li>
+                <li><a>TV Jornal(Interior)</a></li>
+                <li><a href="{% url 'newsletter' %}">Newsletter</a></li>
+            </ul>
+
+            <div class="nav-section">
+                <p class="nav-section-title">Institucional</p>
+                <ul class="nav-list secondary">
+                    <li><a href="#">Opinião</a></li>
+                    <li><a href="#">Mídia</a></li>
+                    <li><a href="#">Sobre</a></li>
+                    <li><a href="#">Ler jornal digital</a></li>
+                    <li><a href="#">Fale conosco</a></li>
+                    <li><a href="#">Anuncie aqui</a></li>
                 </ul>
-            </nav>
+            </div>
+
+            <div class="nav-section">
+                <p class="nav-section-title">Nos siga nas redes</p>
+                <div class="nav-social">
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <div class="nav-section nav-footer-link">
+                <a class="nav-link" href="{% url 'home' %}">Mais recentes</a>
+            </div>
+        </nav>
     </header>
 
     <main class="container">
@@ -88,13 +124,25 @@
         // ===== MENU HAMBURGUER =====
         const toggle = document.getElementById('menu-toggle');
         const nav = document.getElementById('main-nav');
+        const navClose = document.getElementById('nav-close');
 
         if (toggle && nav) {
+            const setNavState = (open) => {
+                nav.classList.toggle('is-open', open);
+                toggle.classList.toggle('is-active', open);
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                nav.setAttribute('aria-hidden', open ? 'false' : 'true');
+                document.body.classList.toggle('nav-open', open);
+            };
+
             toggle.addEventListener('click', function(){
-                const isOpen = nav.classList.toggle('is-open');
-                toggle.classList.toggle('is-active', isOpen);
-                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                const isOpen = nav.classList.contains('is-open');
+                setNavState(!isOpen);
             });
+
+            if (navClose) {
+                navClose.addEventListener('click', () => setNavState(false));
+            }
         }
 
         // ===== CARROSSEL DE STORIES =====
@@ -182,7 +230,7 @@
         <span>Salvos</span>
     </a>
     
-    <a href="#" class="nav-item">
+    <a href="{% url 'notificacoes' %}" class="nav-item {% if request.resolver_match.url_name == 'notificacoes' %}active{% endif %}">
         <i class="fa-regular fa-bell"></i>
         <span>Alertas</span>
     </a>

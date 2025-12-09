@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from app1.models import Artigos
+from app1.models import Artigos, Notificacao
 
 
 SAMPLE_ARTICLES = [
@@ -96,6 +96,28 @@ SAMPLE_ARTICLES = [
     },
 ]
 
+SAMPLE_NOTIFICATIONS = [
+    {
+        "titulo": "Bairro do Recife recebe festival com oito polos",
+        "categoria": "De seu interesse",
+        "resumo": "M?sica, gastronomia e economia criativa tomam conta do Centro Hist?rico neste fim de semana.",
+        "imagem": "https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+        "titulo": "Bal Masqu? 2026 abre venda de ingressos",
+        "categoria": "De seu interesse",
+        "resumo": "Evento chega com novo line-up e refor?a protagonismo das fantasias.",
+        "imagem": "https://images.unsplash.com/photo-1523800503107-5bc3ba2a6f81?auto=format&fit=crop&w=800&q=80",
+    },
+    {
+        "titulo": "Bikini Memories estreia temporada de ver?o",
+        "categoria": "De seu interesse",
+        "resumo": "Programa??o de shows e festas movimenta o Litoral Sul.",
+        "imagem": "https://images.unsplash.com/photo-1517530094915-500495b15ade?auto=format&fit=crop&w=800&q=80",
+    },
+]
+
+
 
 class Command(BaseCommand):
     help = "Popula o banco com notícias demo para visualização da home."
@@ -125,4 +147,28 @@ class Command(BaseCommand):
                 artigo.imagem = item.get("imagem", artigo.imagem)
                 artigo.save(update_fields=["categoria", "resumo", "conteudo", "imagem"])
 
-        self.stdout.write(self.style.SUCCESS(f"{created} artigos criados; total atual: {Artigos.objects.count()}"))
+        notif_created = 0
+        for item in SAMPLE_NOTIFICATIONS:
+            notif, was_created = Notificacao.objects.get_or_create(
+                titulo=item["titulo"],
+                defaults={
+                    "categoria": item["categoria"],
+                    "resumo": item.get("resumo", ""),
+                    "imagem": item.get("imagem", ""),
+                    "artigo": Artigos.objects.filter(titulo__iexact=item["titulo"]).first(),
+                },
+            )
+            if was_created:
+                notif_created += 1
+            else:
+                notif.categoria = item["categoria"]
+                notif.resumo = item.get("resumo", "")
+                notif.imagem = item.get("imagem", notif.imagem)
+                notif.artigo = Artigos.objects.filter(titulo__iexact=item["titulo"]).first()
+                notif.save(update_fields=["categoria", "resumo", "imagem", "artigo"])
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"{created} artigos criados; {notif_created} notificacoes criadas; totais: {Artigos.objects.count()} artigos / {Notificacao.objects.count()} notificacoes"
+            )
+        )
