@@ -2594,7 +2594,6 @@ body {
     padding: 0 10px;  /* ajuste fino: 0 8–10px */
     font-size: 0.90rem;
     line-height: 1.0;
-    border-radius: 6px;
     font-weight: 800;
     white-space: nowrap;
     box-shadow: none;
@@ -2635,4 +2634,172 @@ background-size: 99.5%; }
     padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0,0,0,0);
     white-space: nowrap; border: 0;
+}
+
+/* Carrossel em largura total */
+.hero-carousel {
+    width: 100vw;
+    margin: 0 calc(50% - 50vw) 20px; /* sai do container e alinha na viewport */
+    border-radius: 0;
+}
+
+.hero-slide {
+    border-radius: 0;
+    min-height: 70vh;          /* ajuste se quiser mais/menos altura */
+    padding: 18px 18px 32px;    /* mantém espaço para textos e botão */
+}
+
+.story-indicators {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Remover arredondamento do carrossel */
+.hero-slide,
+.story-slide.hero-slide {
+    border-radius: 0;
+}
+
+.hero-slide::after,
+.story-slide.hero-slide::after {
+    border-radius: 0;
+}
+
+.hero-slide,
+.story-slide.hero-slide {
+    box-shadow: none;
+}
+
+@media (max-width: 480px) {
+  .flag-chip {
+    padding: 2px 6px;
+    gap: 4px;
+    border-radius: 12px;
+  }
+  .flag-chip-visual {
+    width: 22px;
+    height: 14px;
+    border-radius: 4px;
+  }
+  .flag-chip-percent {
+    font-size: 0.70rem;
+    min-width: 20px;
+  }
+  .header-actions {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Container sem limite e sem padding lateral */
+  .home-shell {
+    max-width: none;
+    padding: 0 0 90px;
+  }
+
+  /* Títulos com respiro mínimo */
+  .section-title,
+  .section-title-row {
+    padding: 0 16px;
+  }
+
+  /* Grids/listas em 1 coluna, sem margens laterais */
+  .recent-grid,
+  .stacked-list,
+  .numbered-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Cards ocupando 100% da largura, sem raio nem sombra */
+  .recent-grid > *,
+  .stacked-list > *,
+  .numbered-list > *,
+  .headline-card,
+  .story-slide.hero-slide,
+  .numbered-card {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Remove raio também dos overlays/gradientes */
+  .headline-card::after,
+  .story-slide.hero-slide::after,
+  .numbered-media::after {
+    border-radius: 0;
+  }
+
+  /* Opcional: reduzir espaços verticais gerais */
+  .section-block {
+    margin: 0;
+  }
+}
+
+/* Full-width no mobile para todos os cards/listas */
+@media (max-width: 640px) {
+  html, body { overflow-x: hidden; }
+
+  /* Zera limite/recuos do container principal da home */
+  .home-shell {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0 0 70px; /* só o espaço para a bottom-nav */
+  }
+
+  /* Se houver .home-shell .container envolvendo seções */
+  .home-shell .container {
+    max-width: none;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Títulos com respiro mínimo */
+  .section-title,
+  .section-title-row {
+    padding: 0 12px;
+    margin: 0 0 10px 0;
+  }
+
+  /* Seções sem recuo lateral */
+  .section-block {
+    margin: 0;
+    padding: 0 0 12px 0;
+  }
+
+  /* Grids/listas em 1 coluna, sem recuos */
+  .recent-grid,
+  .stacked-list,
+  .numbered-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  /* Cards 100% da tela, sem raio/sombra */
+  .recent-grid > *,
+  .stacked-list > *,
+  .numbered-list > *,
+  .headline-card,
+  .story-slide.hero-slide,
+  .numbered-card {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Imagens e overlays sem raio */
+  .headline-card::after,
+  .story-slide.hero-slide::after,
+  .numbered-media::after {
+    border-radius: 0;
+  }
 }
