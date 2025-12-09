@@ -1,23 +1,25 @@
 {% extends 'app1/base.html' %}
 {% load static %}
 {% block title %}Jornal do Commercio - Home{% endblock %}
+
 {% block content %}
 <div class="home-shell">
     <!-- Carrossel "De seu interesse" -->
     <section class="stories-container hero-carousel">
         <div class="stories-wrapper">
             {% for artigo in artigos_interesse %}
-            <article class="story-slide hero-slide {% if forloop.first %}active{% endif %}" {% if artigo.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%), url('{{ artigo.imagem.url }}');"{% endif %}>
+            <article class="story-slide hero-slide {% if forloop.first %}active{% endif %}">
+                {% if artigo.imagem %}
+                <img class="hero-photo" src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
+                {% endif %}
                 <div class="hero-badge">De seu interesse</div>
                 <div class="hero-body">
                     <span class="card-category light">{{ artigo.categoria|upper }}</span>
                     <h2 class="hero-title">
-                        <a href="{% url 'exibir_artigo' artigo.id %}">
-                            {{ artigo.titulo }}
-                        </a>
+                        <a href="{% url 'exibir_artigo' artigo.id %}">{{ artigo.titulo }}</a>
                     </h2>
                     <p class="hero-summary">{{ artigo.resumo }}</p>
-                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler noticia completa</a>
+                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler notícia completa</a>
                 </div>
             </article>
             {% empty %}
@@ -45,95 +47,21 @@
     <section class="section-block">
         <div class="section-title-row">
             <h3 class="section-heading">Mais recentes</h3>
-            <span class="section-pill">Noticias</span>
         </div>
         <div class="stacked-list">
             {% for artigo in mais_recentes %}
-            <article class="headline-card" {% if artigo.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%), url('{{ artigo.imagem.url }}');"{% endif %}>
+            <article class="headline-card">
+                {% if artigo.imagem %}
+                <img class="headline-photo" src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
+                {% endif %}
                 <div class="overlay-content">
                     <span class="card-category light">{{ artigo.categoria|upper }}</span>
                     <h4 class="headline-title">{{ artigo.titulo }}</h4>
-                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler noticia completa</a>
+                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler notícia completa</a>
                 </div>
             </article>
             {% empty %}
             <p class="empty">Sem artigos recentes.</p>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Destaques no Brasil -->
-    <section class="section-block">
-        <h3 class="section-heading">Destaques no Brasil</h3>
-        <div class="stacked-list">
-            {% for artigo in mais_recentes|slice:":3" %}
-            <article class="headline-card" {% if artigo.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.75) 70%, rgba(0,0,0,0.9) 100%), url('{{ artigo.imagem.url }}');"{% endif %}>
-                <div class="overlay-content">
-                    <span class="card-category light">{{ artigo.categoria|upper }}</span>
-                    <h4 class="headline-title">{{ artigo.titulo }}</h4>
-                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler noticia completa</a>
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Destaques no mundo -->
-    <section class="section-block">
-        <h3 class="section-heading">Destaques no mundo</h3>
-        <div class="stacked-list">
-            {% for artigo in artigos_politica|slice:":3" %}
-            <article class="headline-card" {% if artigo.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.75) 70%, rgba(0,0,0,0.9) 100%), url('{{ artigo.imagem.url }}');"{% endif %}>
-                <div class="overlay-content">
-                    <span class="card-category light">{{ artigo.categoria|upper }}</span>
-                    <h4 class="headline-title">{{ artigo.titulo }}</h4>
-                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler noticia completa</a>
-                </div>
-            </article>
-            {% empty %}
-            <p class="empty">Sem destaques internacionais.</p>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Videos -->
-    <section class="section-block">
-        <div class="section-title-row">
-            <h3 class="section-heading">Videos</h3>
-        </div>
-        <div class="video-rail">
-            {% for artigo in mais_recentes|slice:":5" %}
-            <div class="video-card">
-                <div class="video-thumb" {% if artigo.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.7) 80%, rgba(0,0,0,0.9) 100%), url('{{ artigo.imagem.url }}');"{% endif %}>
-                    <i class="fa-solid fa-play"></i>
-                </div>
-                <div class="video-meta">
-                    <span class="card-category">{{ artigo.categoria|upper }}</span>
-                    <p>{{ artigo.titulo }}</p>
-                </div>
-            </div>
-            {% empty %}
-            <p class="empty">Sem videos no momento.</p>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Mais lidas -->
-    <section class="section-block">
-        <div class="section-title-row">
-            <h3 class="section-heading accent">Mais lidas</h3>
-            <span class="section-subheading">noticias</span>
-        </div>
-        <div class="numbered-list">
-            {% for artigo in mais_recentes|slice:":3" %}
-            <article class="numbered-card">
-                <div class="number-badge">{{ forloop.counter }}</div>
-                <div class="numbered-media" {% if artigo.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.9) 100%), url('{{ artigo.imagem.url }}');"{% endif %}></div>
-                <div class="numbered-content">
-                    <h4>{{ artigo.titulo }}</h4>
-                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler noticia completa</a>
-                </div>
-            </article>
             {% endfor %}
         </div>
     </section>
@@ -143,7 +71,7 @@
         <div class="utility-card">
             <div class="utility-header">
                 <i class="fa-solid fa-chart-line"></i>
-                <span>Indicadores</span>
+                <span>Cotações</span>
             </div>
             <div class="utility-body">
                 <div><i class="fa-solid fa-euro-sign"></i> Euro: R$ 6,17</div>
@@ -163,15 +91,104 @@
         <div class="utility-card">
             <div class="utility-header">
                 <i class="fa-solid fa-water"></i>
-                <span>Mar e clima</span>
+                <span>Tábua de Marés e Clima</span>
             </div>
             <div class="utility-body">
                 <div class="utility-highlight">Recife</div>
                 <div class="utility-temps">
-                    <span>05:56 <span class="low">29C</span></span>
-                    <span>12:04 <span class="high">25C</span></span>
+                    <span><span class="seta">↑</span> 05:56<span class="low">   29°C</span></span>
+                    <span><span class="seta">↓</span> 12:04<span class="high">   25°C</span></span>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Destaques no Brasil -->
+    <section class="section-block">
+        <h3 class="section-heading">Destaques no Brasil</h3>
+        <div class="stacked-list">
+            {% for artigo in mais_recentes|slice:":3" %}
+            <article class="headline-card">
+                {% if artigo.imagem %}
+                <img class="headline-photo" src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
+                {% endif %}
+                <div class="overlay-content">
+                    <span class="card-category light">{{ artigo.categoria|upper }}</span>
+                    <h4 class="headline-title">{{ artigo.titulo }}</h4>
+                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler notícia completa</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Destaques no mundo -->
+    <section class="section-block">
+        <h3 class="section-heading">Destaques no mundo</h3>
+        <div class="stacked-list">
+            {% for artigo in artigos_politica|slice:":3" %}
+            <article class="headline-card">
+                {% if artigo.imagem %}
+                <img class="headline-photo" src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
+                {% endif %}
+                <div class="overlay-content">
+                    <span class="card-category light">{{ artigo.categoria|upper }}</span>
+                    <h4 class="headline-title">{{ artigo.titulo }}</h4>
+                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler notícia completa</a>
+                </div>
+            </article>
+            {% empty %}
+            <p class="empty">Sem destaques internacionais.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Videos -->
+    <section class="section-block">
+        <div class="section-title-row">
+            <h3 class="section-heading">Videos</h3>
+        </div>
+        <div class="video-rail">
+            {% for artigo in mais_recentes|slice:":5" %}
+            <div class="video-card">
+                <div class="video-thumb">
+                    {% if artigo.imagem %}
+                    <img class="video-photo" src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
+                    {% endif %}
+                    <i class="fa-solid fa-play"></i>
+                </div>
+                <div class="video-meta">
+                    <span class="card-category">{{ artigo.categoria|upper }}</span>
+                    <p>{{ artigo.titulo }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p class="empty">Sem videos no momento.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Mais lidas -->
+    <section class="section-block">
+        <div class="section-title-row">
+            <h3 class="section-heading accent">Mais lidas</h3>
+            <span class="section-subheading">| notícias</span>
+        </div>
+        <div class="numbered-list">
+            {% for artigo in mais_recentes|slice:":3" %}
+            <article class="numbered-card">
+                <div class="number-badge">{{ forloop.counter }}</div>
+                <div class="numbered-media">
+                    {% if artigo.imagem %}
+                    <img class="numbered-photo" src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
+                    {% endif %}
+                </div>
+                <div class="numbered-content">
+                    <h4>{{ artigo.titulo }}</h4>
+                    <a class="cta" href="{% url 'exibir_artigo' artigo.id %}">Ler notícia completa</a>
+                </div>
+            </article>
+            {% endfor %}
         </div>
     </section>
 
@@ -179,8 +196,8 @@
     <section class="section-block products">
         <h3 class="section-heading">Nossos produtos</h3>
         <div class="product-grid">
-            <div class="product-bubble"><span>NE10 Interior</span></div>
-            <div class="product-bubble"><span>Radio Jornal</span></div>
+            <div class="product-bubble ne10"><span>NE10 Interior</span></div>
+            <div class="product-bubble radio"><span>Radio Jornal</span></div>
             <div class="product-bubble jcpe"><span>JCPE</span></div>
             <div class="product-bubble tv"><span>TV Jornal</span></div>
             <div class="product-bubble blog"><span>Blog do Torcedor</span></div>
@@ -214,7 +231,7 @@
                 <a href="#">Jornal do Commercio</a>
                 <a href="#">Radio Jornal</a>
                 <h4>Nos siga</h4>
-                <span class="product-bubble tiny jcpe">JCPE</span>
+                <span class="product-bubble tiny jcpe"></span>
             </div>
         </div>
     </section>

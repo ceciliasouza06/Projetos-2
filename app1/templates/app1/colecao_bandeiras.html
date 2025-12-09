@@ -1,11 +1,11 @@
 {% extends 'app1/base.html' %}
 {% load static %}
-{% block title %}Colecao de bandeiras{% endblock %}
+{% block title %}Coleção de bandeiras{% endblock %}
 {% block content %}
 <div class="home-shell flag-collection-shell">
     <section class="section-block">
         <div class="section-title-row">
-            <h3 class="section-heading">Sua colecao de bandeiras</h3>
+            <h3 class="section-heading">Sua coleção de bandeiras</h3>
         </div>
         <div class="flag-progress-card full">
             <div class="flag-progress-visual" style="background-image: url('{% static imagem_atual %}');">
@@ -16,14 +16,14 @@
                 </div>
             </div>
             <div class="flag-progress-meta inline">
-                <p class="flag-progress-remaining">Faltam {{ faltam }} noticias para chegar a 100%</p>
-                <p class="flag-progress-total">Total lido: {{ total_lidos }} noticias</p>
+                <p class="flag-progress-remaining">Faltam {{ faltam }} notícias para chegar a 100%</p>
+                <p class="flag-progress-total">Total lido: {{ total_lidos }} notícia(s)</p>
             </div>
         </div>
     </section>
 
     <section class="section-block">
-        <h3 class="section-heading">Colecao</h3>
+        <h3 class="section-heading">Coleção</h3>
         <div class="flag-grid">
             {% for item in grid %}
             <div class="flag-card {{ item.status }}">
@@ -42,14 +42,14 @@
                             {% if item.status == 'complete' %}
                                 Completa
                             {% elif item.status == 'progress' %}
-                                {{ item.percent }}% concluido
+                                {{ item.percent }}% concluído
                             {% else %}
                                 Bloqueada
                             {% endif %}
                         </p>
                     </div>
                     {% if item.status == 'progress' %}
-                    <span class="flag-pill">Faltam {{ item.faltam }} noticias</span>
+                    <span class="flag-pill">Faltam {{ item.faltam }} notícias</span>
                     {% elif item.status == 'complete' %}
                     <span class="flag-pill done">Liberada</span>
                     {% endif %}

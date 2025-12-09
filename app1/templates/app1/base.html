@@ -8,6 +8,7 @@
     <title>{% block title %}Jornal do Commercio{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'app1/css/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap">
 </head>
 
 <body>
@@ -52,7 +53,6 @@
             </div>
         </div>
         <nav class="main-nav" id="main-nav" aria-hidden="true">
-            <button id="nav-close" class="nav-close" aria-label="Fechar menu">×</button>
             <div class="nav-section nav-section-top">
                 <a class="nav-link nav-categories" href="{% url 'categorias' %}">
                     <span>Categorias</span>
@@ -62,37 +62,25 @@
 
             <ul class="nav-list">
                 <li><a href="{% url 'topico_pernambuco' %}">Pernambuco</a></li>
-                <li><a href="{% url 'topico_politica' %}">Politica</a></li>
+                <li><a href="{% url 'topico_politica' %}">Política</a></li>
                 <li><a href="{% url 'topico_esportes' %}">Esportes</a></li>
                 <li><a href="{% url 'topico_cultura' %}">Cultura</a></li>
-
-                {% if user.is_authenticated %}
-                <li class="nav-highlight">
-                    <a href="{% url 'meus_favoritos' %}">Meus Favoritos</a>
-                </li>
-                {% endif %}
-                <li><a href="{% url 'ao_vivo' %}">Ao Vivo</a></li>
-                <li><a>Radio Jornal(Recife)</a></li>
-                <li><a>Radio Jornal(Interior)</a></li>
-                <li><a>TV Jornal(Recife)</a></li>
-                <li><a>TV Jornal(Interior)</a></li>
-                <li><a href="{% url 'newsletter' %}">Newsletter</a></li>
+                <li><a href="#">Economia</a></li>
+                <li><a href="#">Mundo</a></li>
+                <li><a href="#">Brasil</a></li>
+                <li><a href="#">Saúde e bem-estar</a></li>
+                <li><a href="#">Segurança</a></li>
+                <li><a href="#">ENEM e Educação</a></li>
+                <li><a href="#">Mobilidade</a></li>
+                <li><a href="#">Social</a></li>
+                <li><a href="#">Opinião</a></li>
+                <li><a href="#">Sobre</a></li>
+                <li><a href="#">Ler Jornal Digital</a></li>
+                <li><a href="#">Fale Conosco</a></li>
+                <li><a href="#">Nos Siga nas Redes</a></li>
             </ul>
 
             <div class="nav-section">
-                <p class="nav-section-title">Institucional</p>
-                <ul class="nav-list secondary">
-                    <li><a href="#">Opinião</a></li>
-                    <li><a href="#">Mídia</a></li>
-                    <li><a href="#">Sobre</a></li>
-                    <li><a href="#">Ler jornal digital</a></li>
-                    <li><a href="#">Fale conosco</a></li>
-                    <li><a href="#">Anuncie aqui</a></li>
-                </ul>
-            </div>
-
-            <div class="nav-section">
-                <p class="nav-section-title">Nos siga nas redes</p>
                 <div class="nav-social">
                     <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
                     <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>

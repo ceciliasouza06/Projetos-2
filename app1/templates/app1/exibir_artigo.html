@@ -25,8 +25,6 @@
     <section class="article-hero">
         <div class="article-header">
             <div class="article-eyebrow">
-                <span class="eyebrow-label">De seu interesse</span>
-                <span class="eyebrow-divider">|</span>
                 <span class="eyebrow-category">{{ artigo.categoria }}</span>
             </div>
 
@@ -99,7 +97,10 @@
         <h3 class="section-heading">Leia também</h3>
         <div class="related-list">
             {% for rel in relacionados %}
-            <article class="related-card" {% if rel.imagem %}style="background-image: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 75%, rgba(0,0,0,0.85) 100%), url('{{ rel.imagem }}');"{% endif %}>
+            <article class="related-card">
+                {% if rel.imagem %}
+                <img class="related-photo" src="{{ rel.imagem }}" alt="{{ rel.titulo }}">
+                {% endif %}
                 <div class="related-overlay">
                     <span class="card-category light">{{ rel.categoria|upper }}</span>
                     <h4><a href="{% url 'exibir_artigo' rel.id %}">{{ rel.titulo }}</a></h4>
