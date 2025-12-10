@@ -1,7 +1,7 @@
 from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from .models import Artigos, Progresso_diario, Progresso, Notificacao
+from .models import Artigos, Comentario, Progresso_diario, Progresso, Notificacao
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
@@ -15,6 +15,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib import messages
+from django.db import IntegrityError, transaction
 from .utils.progress import montar_progresso_bandeiras
 
 
@@ -208,10 +209,32 @@ def exibir_artigo(request, artigo_id):
     else:
         visitante = f"ip_{request.META.get('REMOTE_ADDR', 'anonimo')}"
 
-    diario, created = Progresso_diario.objects.get_or_create(
-        data=hoje,
-        visitante=visitante,
-    )
+    diario = None
+    for _ in range(3):
+        try:
+            with transaction.atomic():
+                diario, _ = Progresso_diario.objects.get_or_create(
+                    data=hoje,
+                    visitante=visitante,
+                    defaults={"artigos_lidos": 0},
+                )
+            break
+        except IntegrityError:
+            diario = Progresso_diario.objects.filter(
+                data=hoje, visitante=visitante
+            ).first()
+            if diario:
+                break
+
+    if diario is None:
+        # Último recurso: evita quebrar a página caso o índice único esteja inconsistente.
+        diario = Progresso_diario.objects.filter(data=hoje).first()
+        if diario is None:
+            diario = Progresso_diario.objects.create(
+                data=hoje,
+                visitante=visitante,
+                artigos_lidos=0,
+            )
 
     if "artigos_lidos" not in request.session:
         request.session["artigos_lidos"] = []
@@ -239,7 +262,31 @@ def exibir_artigo(request, artigo_id):
 
     artigos_lidos_na_sessao = len(request.session["artigos_lidos"])
     if artigos_lidos_na_sessao >= 1:
-        mensagem = f"Voc? leu {artigos_lidos_na_sessao} artigos nesta sess?o."
+        mensagem = f"Você leu {artigos_lidos_na_sessao} artigos nesta sessão."
+
+    # ComentÇ¸rios
+    if request.method == "POST":
+        nome_form = request.POST.get("nome", "").strip()
+        texto_form = request.POST.get("comentario", "").strip()
+        avatar_form = request.POST.get("avatar", "").strip()
+
+        nome_final = nome_form or (
+            request.user.get_full_name()
+            if request.user.is_authenticated and request.user.get_full_name()
+            else (request.user.username if request.user.is_authenticated else "Leitor")
+        )
+
+        if texto_form:
+            Comentario.objects.create(
+                artigo=artigo,
+                nome=nome_final,
+                texto=texto_form,
+                avatar=avatar_form,
+            )
+            messages.success(request, "Comentário publicado!")
+            return redirect("exibir_artigo", artigo_id=artigo.id)
+        else:
+            messages.error(request, "Digite um comentário antes de enviar.")
 
     relacionados = (
         Artigos.objects.filter(categoria=artigo.categoria)
@@ -252,6 +299,7 @@ def exibir_artigo(request, artigo_id):
         "mensagem": mensagem,
         "flag": flag,
         "relacionados": relacionados,
+        "comentarios": artigo.comentarios.all(),
     }
     return render(request, "app1/exibir_artigo.html", context)
 def conteudo_de_contexto(request, id_artigo):

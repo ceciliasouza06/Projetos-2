@@ -4,12 +4,12 @@
 {% block content %}
 <div class="article-shell">
     {% if mensagem %}
-    <div id="banner" class="banner-engajamento">
+    <div class="inline-alert">
         {{ mensagem }}
     </div>
     {% endif %}
     {% if messages %}
-    <div class="banner-stack">
+    <div class="toast-stack">
         {% for message in messages %}
         <div class="banner-engajamento show">{{ message }}</div>
         {% endfor %}
@@ -62,7 +62,7 @@
 
             {% if artigo.data_publicacao %}
             <div class="article-pubinfo">
-                Publicado em {{ artigo.data_publicacao|date:"d/m/Y \\à\\s H\\hi" }}
+                Publicado em {{ artigo.data_publicacao|date:"d/m/Y 'às' H\\hi" }}
             </div>
             {% endif %}
         </div>
@@ -91,6 +91,57 @@
             <a class="chip-link" href="{% url 'sugestao' artigo.id %}">Sugestões de leitura</a>
             <a class="chip-link" href="{% url 'bullets' artigo.id %}">Pontos chave</a>
             <a class="chip-link" href="{% url 'conteudo_de_contexto' artigo.id %}">Conteúdo de contexto</a>
+        </div>
+    </section>
+
+    <section class="comments-section">
+        <div class="comments-card">
+            <div class="comments-header">
+                <h3>Comentários</h3>
+                <span class="comments-count">{{ comentarios|length }}</span>
+            </div>
+            <form method="POST" class="comment-form">
+                {% csrf_token %}
+                <div class="comment-inputs">
+                    <img src="{% static 'app1/assets/avatar.png' %}" alt="Avatar padrão" class="comment-avatar">
+                    <div class="comment-fields">
+                        <input type="text" name="nome" placeholder="Seu nome (opcional)">
+                        <textarea name="comentario" rows="3" placeholder="Adicione seu comentário..."></textarea>
+                        <button type="submit" class="cta ghost">Publicar</button>
+                    </div>
+                </div>
+            </form>
+
+            {% if comentarios %}
+            <div class="comments-list">
+                {% for item in comentarios %}
+                <article class="comment">
+                    <div class="comment-avatar-wrap">
+                        {% if item.avatar %}
+                        <img src="{{ item.avatar }}" alt="{{ item.nome }}" class="comment-avatar">
+                        {% else %}
+                        <img src="{% static 'app1/assets/avatar.png' %}" alt="{{ item.nome }}" class="comment-avatar">
+                        {% endif %}
+                    </div>
+                    <div class="comment-body">
+                        <div class="comment-top">
+                            <div class="comment-meta">
+                                <span class="comment-author">{{ item.nome }}</span>
+                                <span class="comment-date">{{ item.created_at|date:"d/m/Y H\\hi" }}</span>
+                            </div>
+                            <div class="comment-actions">
+                                <i class="fa-regular fa-heart"></i>
+                                <span class="comment-reply">Responder</span>
+                            </div>
+                        </div>
+                        <p class="comment-text">{{ item.texto }}</p>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="comment-empty">Seja o primeiro a comentar.</p>
+            {% endif %}
         </div>
     </section>
 

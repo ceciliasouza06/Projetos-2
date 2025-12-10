@@ -59,4 +59,18 @@ class Notificacao(models.Model):
 
     def __str__(self):
         return self.titulo
+
+
+class Comentario(models.Model):
+    artigo = models.ForeignKey(Artigos, on_delete=models.CASCADE, related_name="comentarios")
+    nome = models.CharField(max_length=80, default="Leitor")
+    texto = models.TextField()
+    avatar = models.URLField(max_length=300, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True, db_column="created_at")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Comentário de {self.nome} em {self.artigo.titulo}"
     

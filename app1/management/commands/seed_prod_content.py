@@ -3,220 +3,293 @@ from django.utils import timezone
 
 from app1.models import Artigos
 
-
-PROD_ARTICLES = [
+# Mesmo conteúdo da seed de demo, mas sem criar comentários nem notificações extras.
+ARTICLES = [
     {
-        "titulo": "Governo lança plano de revitalização do Rio Capibaribe",
-        "categoria": "Pernambuco",
-        "resumo": "Programa integra dragagem, reflorestamento e ciclovias nas margens do rio.",
-        "conteudo": (
-            "O governo estadual apresentou um pacote de revitalização do Rio Capibaribe com metas de curto e médio prazo. "
-            "A proposta reúne dragagem em trechos críticos, plantio de mata ciliar e criação de ciclovias ligando bairros ribeirinhos. "
-            "Prefeituras da Região Metropolitana assinaram um termo de cooperação para acompanhar as obras e fiscalizar a ocupação irregular.\n\n"
-            "Além da infraestrutura, o plano prevê ações de educação ambiental em escolas públicas e monitoramento constante da qualidade da água. "
-            "A previsão é que os primeiros trechos sejam entregues ainda neste semestre, reduzindo enchentes e devolvendo o rio à população."
-        ),
-        "imagem": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "titulo": "Assembleia aprova pacote anticorrupção para prefeituras",
-        "categoria": "Política",
-        "resumo": "Projeto cria metas de transparência, exige compras digitais e reforça controle social.",
-        "conteudo": (
-            "Deputados estaduais aprovaram, por ampla maioria, um pacote de medidas anticorrupção voltado às prefeituras. "
-            "O texto obriga a publicação de todos os contratos em portais unificados, amplia a atuação dos conselhos municipais "
-            "e estabelece punições mais rápidas para gestores que descumprirem a lei de acesso à informação.\n\n"
-            "A bancada de oposição tentou incluir emendas para limitar gastos com publicidade institucional, mas a base do governo "
-            "manteve o texto original. Prefeitos terão seis meses para adequar os sistemas e treinar as equipes."
-        ),
-        "imagem": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "titulo": "Sport confirma novo técnico e pré-temporada no interior",
-        "categoria": "Esportes",
-        "resumo": "Clube aposta em calendário enxuto e treinos fechados para arrancar bem na Série B.",
-        "conteudo": (
-            "O Sport anunciou o treinador que comandará o time na próxima temporada e confirmou que a pré-temporada será realizada em Caruaru. "
-            "O elenco deve se apresentar na primeira semana de janeiro para testes físicos, jogos-treino com equipes do interior e ajustes táticos. "
-            "A diretoria disse que manterá a base do ano anterior e busca reforços pontuais para o meio-campo.\n\n"
-            "O novo comandante destacou que quer um time mais intenso e com variações de esquema. "
-            "A torcida prepara caravanas para acompanhar os primeiros amistosos e observar a evolução do grupo."
-        ),
-        "imagem": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "titulo": "Festival de Inverno de Garanhuns traz programação híbrida",
-        "categoria": "Cultura",
-        "resumo": "Edição aposta em shows presenciais, transmissões online e oficinas gratuitas.",
-        "conteudo": (
-            "A nova edição do Festival de Inverno de Garanhuns terá palcos espalhados pelo centro e transmissões ao vivo para quem acompanha de casa. "
-            "A curadoria confirmou artistas locais e nacionais, com espaço para frevo, rock, música instrumental e debates sobre economia criativa. "
-            "A rede hoteleira já registra alta ocupação e comerciantes montam estrutura para receber o público.\n\n"
-            "Além dos shows, o evento oferece oficinas de dança, audiovisual e empreendedorismo cultural, todas gratuitas e com inscrições antecipadas. "
-            "A prefeitura promete reforçar a segurança e os roteiros de transporte para evitar aglomerações em horários de pico."
-        ),
-        "imagem": "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "titulo": "Opinião: Como recuperar a confiança no transporte público do Recife",
-        "categoria": "Opinião",
-        "resumo": "Transparência, previsibilidade e novas rotas são pilares para reconquistar o passageiro.",
-        "conteudo": (
-            "Nos últimos anos, a relação entre usuários e operadores do transporte público no Recife se desgastou por atrasos, superlotação e falhas na comunicação. "
-            "Recuperar essa confiança exige publicar dados em tempo real, esclarecer custos e aproximar o planejamento das demandas dos bairros periféricos.\n\n"
-            "Sem ouvir quem depende do ônibus diariamente, qualquer solução vira maquiagem. "
-            "É preciso abrir as planilhas, testar rotas com participação das comunidades e garantir que as melhorias sejam monitoradas por indicadores claros."
-        ),
-        "imagem": "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "titulo": "Porto Digital anuncia laboratório de IA generativa",
-        "categoria": "Tecnologia",
-        "resumo": "Nova estrutura oferece mentoria para startups e projetos corporativos em Recife.",
-        "conteudo": (
-            "O Porto Digital lançou um laboratório dedicado a soluções de inteligência artificial generativa, com foco em empresas de serviços e indústria criativa. "
-            "O espaço terá squads multidisciplinares, mentores convidados e parcerias com universidades para acelerar provas de conceito. "
-            "As primeiras chamadas selecionam projetos de atendimento ao cliente, automação de marketing e análise de dados em linguagem natural.\n\n"
-            "Segundo a coordenação, o objetivo é criar casos de uso com sotaque local, evitando dependência total de modelos estrangeiros. "
-            "O laboratório também oferecerá workshops abertos para estudantes interessados em IA e ética digital."
-        ),
-        "imagem": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "titulo": "Economia: Exportações do polo farmacoquímico crescem 12%",
+        "titulo": "Mercado imobiliário do Recife cresce com novos empreendimentos",
         "categoria": "Economia",
-        "resumo": "Empresas relatam novos contratos na América Latina e investimentos em P&D.",
+        "resumo": "Novos lançamentos em áreas centrais e no litoral mantêm o mercado aquecido.",
         "conteudo": (
-            "O polo farmacoquímico do estado encerrou o trimestre com alta de 12% nas exportações, puxada por medicamentos genéricos e insumos hospitalares. "
-            "Empresas instaladas em Goiana e Cabo de Santo Agostinho destacam o câmbio favorável e a retomada de licitações internacionais como motores do crescimento. "
-            "O setor prevê contratar mais técnicos e ampliar laboratórios de pesquisa.\n\n"
-            "Especialistas alertam, porém, que a competitividade depende de políticas de inovação de longo prazo. "
-            "Sem financiamento consistente e desburocratização, a indústria pode perder espaço para gigantes asiáticos."
+            "<p><strong>Onde estão os lançamentos</strong></p>"
+            "<p>Boa Viagem, Cais José Estelita e o eixo Norte lideram a oferta de prédios mistos e studios.</p>"
+            "<p><strong>Perfil do comprador</strong></p>"
+            "<p>Jovens buscam unidades compactas com coworking e serviços de assinatura; investidores focam em locação por temporada.</p>"
+            "<p><strong>Perspectiva de preços</strong></p>"
+            "<p>Com juros mais baixos, incorporadoras projetam estabilidade e entregas faseadas até 2026.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1582719478171-2f2df1d935ef?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Náutico aposta na base para reconstrução em 2026",
-        "categoria": "Esportes",
-        "resumo": "Clube reformula elenco com pratas da casa e metas de acesso no médio prazo.",
+        "titulo": "Avanço da IA generativa transforma o mercado web",
+        "categoria": "Tecnologia",
+        "resumo": "Ferramentas aceleram prototipagem, personalização e novos modelos de serviços.",
         "conteudo": (
-            "Depois de uma temporada instável, o Náutico anunciou um plano de reconstrução centrado na categoria de base. "
-            "Seis atletas do sub-20 foram promovidos ao time principal, e a comissão técnica prepara intercâmbio com clubes parceiros para dar rodagem ao grupo. "
-            "O orçamento será controlado e priorizará infraestrutura e análise de desempenho.\n\n"
-            "A diretoria também promete reabrir o diálogo com torcedores sobre o futuro dos Aflitos. "
-            "A ideia é modernizar o estádio em fases, sem comprometer as finanças, e tornar o ambiente mais acolhedor para famílias."
+            "<p><strong>Tendência</strong></p>"
+            "<p>Modelos de texto e imagem entram no fluxo de UX, atendimento e marketing das agências digitais.</p>"
+            "<p><strong>Novos times</strong></p>"
+            "<p>Squads de IA combinam design, dados e engenharia para entregar provas de conceito em dias.</p>"
+            "<p><strong>Governança</strong></p>"
+            "<p>Especialistas pedem política clara de dados, direitos autorais e transparência nos prompts.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1521417531039-55a636d4765d?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Reforma tributária: o que muda para os municípios do Agreste",
-        "categoria": "Política",
-        "resumo": "Especialistas explicam impacto do IVA dual e a redistribuição do Fundo de Participação.",
-        "conteudo": (
-            "Prefeitos do Agreste participaram de um seminário para entender os efeitos práticos da reforma tributária aprovada no Congresso. "
-            "A principal dúvida é como o novo imposto sobre valor agregado será dividido e de que forma os fundos compensatórios vão chegar às cidades menores. "
-            "Tributaristas defendem que municípios se organizem em consórcios para ganhar escala na cobrança e na fiscalização.\n\n"
-            "Também foi debatida a transição dos benefícios fiscais para indústrias instaladas na região. "
-            "Os gestores buscam segurança jurídica para manter empregos sem ferir as novas regras nacionais."
-        ),
-        "imagem": "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "titulo": "Manguebeat faz 30 anos e inspira novas bandas independentes",
+        "titulo": "Grammy Latino 2025 terá cinco pernambucanos indicados",
         "categoria": "Cultura",
-        "resumo": "Coletivos se reúnem no Recife Antigo para homenagear Chico Science e Nação Zumbi.",
+        "resumo": "Cena local emplaca artistas em categorias de música regional e contemporânea.",
         "conteudo": (
-            "Três décadas após o lançamento de Da Lama ao Caos, o manguebeat segue influenciando artistas de várias cenas. "
-            "Bandas independentes organizaram uma maratona de shows no Recife Antigo, misturando alfaias, riffs pesados e letras sobre a cidade. "
-            "Além dos palcos, houve debates sobre sustentabilidade na música e oficinas de produção para jovens músicos.\n\n"
-            "Produtores culturais avaliam que o movimento continua vivo porque se reinventa com tecnologia e colaboração. "
-            "Para os fãs, é a prova de que identidade regional e inovação podem caminhar juntas."
+            "<p><strong>Quem está na lista</strong></p>"
+            "<p>Bandas de manguebeat, frevo e pop eletrônico aparecem em cinco categorias diferentes.</p>"
+            "<p><strong>Força regional</strong></p>"
+            "<p>Produtores celebram a exportação de música independente e parcerias com selos internacionais.</p>"
+            "<p><strong>Agenda pré-premiação</strong></p>"
+            "<p>Artistas programam showcases em Miami e levam maracatu ao tapete vermelho.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Transnordestina retoma obras em trecho pernambucano",
-        "categoria": "Pernambuco",
-        "resumo": "Novo cronograma prevê entrega parcial até o final do próximo ano.",
+        "titulo": "Megasena acumula e prêmio pode chegar a R$ 120 milhões",
+        "categoria": "Loterias",
+        "resumo": "Sem ganhadores no último sorteio, apostadores correm para bolões.",
         "conteudo": (
-            "Após meses de negociação com a União, a concessionária da Transnordestina retomou as obras no trecho que corta o Sertão pernambucano. "
-            "Máquinas voltaram a operar entre Salgueiro e Trindade, com prioridade para pontes e túneis que ficaram parados. "
-            "Produtores rurais comemoram a perspectiva de reduzir custos logísticos e ampliar o escoamento de grãos.\n\n"
-            "O governo do estado acompanha o cronograma e prometeu montar grupos de trabalho para garantir licenciamento ambiental e segurança dos canteiros. "
-            "Comunidades ribeirinhas cobram medidas para evitar impactos nas fontes de água da região."
+            "<p><strong>Acúmulo</strong></p>"
+            "<p>O prêmio sobe após nenhum bilhete acertar as seis dezenas, estimulando filas nas lotéricas.</p>"
+            "<p><strong>Chances reais</strong></p>"
+            "<p>Matemáticos lembram que a probabilidade não muda; o jogo simples permanece a mesma aposta.</p>"
+            "<p><strong>Planejamento</strong></p>"
+            "<p>Especialistas em finanças sugerem limitar gastos e tratar a aposta como lazer, não investimento.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1504275107627-0c2ba7a43dba?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Opinião: A inteligência artificial precisa de sotaque local",
-        "categoria": "Opinião",
-        "resumo": "Modelos globais ignoram contextos regionais e isso afeta sotaques, gírias e serviços públicos.",
+        "titulo": "Nova rota aérea liga Nordeste à Europa três vezes por semana",
+        "categoria": "Turismo",
+        "resumo": "Voo direto Recife-Lisboa promete aumentar fluxo de turistas e exportações.",
         "conteudo": (
-            "Ferramentas de IA generativa costumam ser treinadas em bases de dados que pouco refletem a diversidade linguística brasileira. "
-            "Isso aparece em respostas que desconsideram sotaques, gírias e referências culturais de Pernambuco. "
-            "Sem customização, sistemas de atendimento automatizado acabam reforçando desigualdades de acesso.\n\n"
-            "A solução passa por incentivar datasets locais e parcerias entre governo, universidades e empresas. "
-            "Quando a tecnologia respeita o contexto, ela se torna mais inclusiva e útil para serviços públicos e privados."
+            "<p><strong>Operação</strong></p>"
+            "<p>A rota parte três vezes por semana, com conexões rápidas para outras capitais europeias.</p>"
+            "<p><strong>Impacto</strong></p>"
+            "<p>Hotéis e restaurantes projetam alta na ocupação; setor de frutas e pescados ganha novo corredor logístico.</p>"
+            "<p><strong>Lançamento</strong></p>"
+            "<p>Primeiro voo decola em janeiro com tarifas promocionais na semana inaugural.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Surfistas disputam etapa histórica em Fernando de Noronha",
+        "titulo": "Porto de Suape bate recorde de movimentação no ano",
+        "categoria": "Economia",
+        "resumo": "Alta de cargas conteinerizadas e novas rotas de cabotagem puxam resultado.",
+        "conteudo": (
+            "<p><strong>Números</strong></p>"
+            "<p>Movimento cresceu 18% no acumulado, com destaque para celulose e veículos.</p>"
+            "<p><strong>Fatores</strong></p>"
+            "<p>Cabotagem reforçada e automação de gates ajudaram a reduzir fila de caminhões.</p>"
+            "<p><strong>Próximas obras</strong></p>"
+            "<p>Autoridade portuária planeja dragagem e ampliação de terminais até o fim de 2026.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Frente fria traz chuva forte e maré alta para o litoral de Pernambuco",
+        "categoria": "Tempo",
+        "resumo": "Defesa Civil alerta para alagamentos e reforça equipes de drenagem.",
+        "conteudo": (
+            "<p><strong>Previsão</strong></p>"
+            "<p>Pancadas intensas são esperadas à noite, com maré elevada na manhã seguinte.</p>"
+            "<p><strong>Cuidados</strong></p>"
+            "<p>Moradores devem evitar áreas de risco, monitorar encostas e redobrar atenção no trânsito.</p>"
+            "<p><strong>Monitoramento</strong></p>"
+            "<p>Prefeituras acompanham volumes de chuva em tempo real e acionam abrigos se necessário.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Startup pernambucana cria app de telemedicina para idosos",
+        "categoria": "Saúde",
+        "resumo": "Interface simples conecta pacientes, médicos e familiares com prontuário digital.",
+        "conteudo": (
+            "<p><strong>Como funciona</strong></p>"
+            "<p>Botões grandes, lembretes de medicação e videochamadas facilitam consultas remotas.</p>"
+            "<p><strong>Benefícios</strong></p>"
+            "<p>Familiares acompanham prescrições em tempo real e recebem alertas de exames.</p>"
+            "<p><strong>Próximo passo</strong></p>"
+            "<p>A empresa testa integração com farmácias para entrega de medicamentos em casa.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Sport e Náutico empatam em clássico decisivo pelo estadual",
         "categoria": "Esportes",
-        "resumo": "Ondas de mais de dois metros atraem atletas do circuito brasileiro e internacional.",
+        "resumo": "Goleiros brilham e mantêm o 0 a 0 em jogo truncado nos Aflitos.",
         "conteudo": (
-            "Fernando de Noronha recebe uma etapa especial do circuito brasileiro de surfe com presença de atletas internacionais. "
-            "O swell previsto para a semana promete ondas de mais de dois metros, cenário perfeito para manobras de alto nível. "
-            "A organização montou estrutura reduzida para preservar o parque marinho e incentivar práticas sustentáveis.\n\n"
-            "Moradores participam como voluntários e ofereceram trilhas guiadas para visitantes. "
-            "Além do esporte, o evento busca reforçar a importância de manter a ilha protegida do turismo predatório."
+            "<p><strong>O jogo</strong></p>"
+            "<p>Chances pelos lados e um travessão para cada time marcaram o primeiro tempo.</p>"
+            "<p><strong>Destaques</strong></p>"
+            "<p>Defesas difíceis dos goleiros e entrada da base rubro-negra deram fôlego na reta final.</p>"
+            "<p><strong>Classificação</strong></p>"
+            "<p>Resultado deixa a decisão aberta para o confronto de volta no fim de semana.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Rede estadual de saúde expande atendimento por telemedicina",
-        "categoria": "Pernambuco",
-        "resumo": "Hospitais regionais ganham salas equipadas e agenda para especialidades de alta demanda.",
+        "titulo": "Recife recebe festival de inovação e economia criativa",
+        "categoria": "Eventos",
+        "resumo": "Trilhas de IA, cidades inteligentes e negócios de impacto ocupam o Cais do Sertão.",
         "conteudo": (
-            "A Secretaria de Saúde inaugurou novas salas de telemedicina em hospitais do Agreste e do Sertão. "
-            "Com câmeras de alta definição e conectividade dedicada, pacientes conseguem consultas com especialistas do Recife sem precisar viajar. "
-            "A meta é reduzir filas de cardiologia, neurologia e pediatria nos próximos meses.\n\n"
-            "Gestores informaram que os dados serão integrados ao prontuário eletrônico estadual, permitindo acompanhamento contínuo. "
-            "Profissionais receberam treinamento para lidar com a tecnologia e garantir privacidade nas videochamadas."
+            "<p><strong>Programação</strong></p>"
+            "<p>Painéis sobre IA em serviços públicos, workshops de prototipagem e feira de startups.</p>"
+            "<p><strong>Para quem</strong></p>"
+            "<p>Empreendedores, gestores e estudantes encontram mentorias e vagas de estágio.</p>"
+            "<p><strong>Até quando</strong></p>"
+            "<p>Evento segue até domingo com área de demonstrações e pitches abertos ao público.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1582719478145-3b1aecea0bdf?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Mostra literária do Sertão celebra escritoras nordestinas",
-        "categoria": "Cultura",
-        "resumo": "Evento reúne clubes de leitura, oficinas de cordel e debates sobre representatividade.",
+        "titulo": "Adolescente é detido com 19 quilos de haxixe em aeroporto do Recife",
+        "categoria": "Brasil",
+        "resumo": "Operação da PF intercepta bagagem com droga antes de embarque internacional.",
         "conteudo": (
-            "A primeira edição da Mostra Literária do Sertão reuniu autoras de vários estados do Nordeste em Petrolina. "
-            "Além dos lançamentos de livros, o público participou de rodas de conversa sobre protagonismo feminino e oficinas de literatura de cordel. "
-            "Bibliotecas comunitárias montaram estandes para arrecadar livros e incentivar a leitura entre crianças.\n\n"
-            "Editoras independentes relataram aumento nas vendas durante a feira e planejam ampliar a circulação das obras em escolas públicas. "
-            "Para os organizadores, o evento mostrou que o interior tem público e produção literária vigorosa."
+            "<p><strong>Flagrante</strong></p>"
+            "<p>Agentes suspeitaram do peso da mala no raio-x e acionaram a equipe canina.</p>"
+            "<p><strong>Investigação</strong></p>"
+            "<p>Polícia apura se o jovem integra rede de tráfico que usa o Nordeste como rota.</p>"
+            "<p><strong>Impacto no terminal</strong></p>"
+            "<p>Voos seguiram dentro do horário enquanto a bagagem era periciada.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=1000&q=80",
     },
     {
-        "titulo": "Conselho de transparência discute prioridades para 2026",
+        "titulo": "Nova PEC que aumenta valor das emendas parlamentares avança na Alepe",
         "categoria": "Política",
-        "resumo": "Reunião definiu cronograma para portal de dados abertos e auditorias cidadãs.",
+        "resumo": "Texto eleva teto das emendas e cria gatilhos de transparência para execução.",
         "conteudo": (
-            "O conselho estadual de transparência realizou a primeira reunião do ano e traçou metas para ampliar o acesso a dados públicos. "
-            "Entre as prioridades estão a publicação de contratos de obras em formato aberto, indicadores de educação e relatórios ambientais detalhados. "
-            "Organizações da sociedade civil pediram canais claros para denúncias de mau uso de recursos.\n\n"
-            "Os conselheiros querem que cada secretaria apresente um plano trimestral de abertura de dados e que a população possa acompanhar a execução. "
-            "A ideia é que as auditorias cidadãs sejam incorporadas ao processo de avaliação das políticas públicas."
+            "<p><strong>O que muda</strong></p>"
+            "<p>Parlamentares terão mais verba individual, com regras de publicação de contratos.</p>"
+            "<p><strong>Debate</strong></p>"
+            "<p>Base defende previsibilidade para obras; oposição cobra controle social sobre gastos.</p>"
+            "<p><strong>Calendário</strong></p>"
+            "<p>Segunda votação ocorre na próxima semana e pode valer já no próximo orçamento.</p>"
         ),
-        "imagem": "https://images.unsplash.com/photo-1503389152951-9f343605f61e?auto=format&fit=crop&w=1200&q=80",
+        "imagem": "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Paço do Frevo cria selo musical para novos artistas do ritmo",
+        "categoria": "Cultura",
+        "resumo": "Iniciativa amplia presença do frevo em plataformas e conecta veteranos a novatos.",
+        "conteudo": (
+            "<p><strong>Linha editorial</strong></p>"
+            "<p>Catálogo mistura arranjos tradicionais e beats eletrônicos sem perder metais e alfaias.</p>"
+            "<p><strong>Planos</strong></p>"
+            "<p>Primeiras faixas saem ainda em novembro com clipes gravados no Recife Antigo.</p>"
+            "<p><strong>Artistas</strong></p>"
+            "<p>O selo aposta em jovens compositores e convida mestres do frevo para colaborações.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Cães e gatos veem menos cores que humanos, revela estudo",
+        "categoria": "Curiosidades",
+        "resumo": "Pesquisa detalha paleta reduzida dos pets e sugere ajustes em brinquedos e ambientes.",
+        "conteudo": (
+            "<p><strong>Como eles enxergam</strong></p>"
+            "<p>Pets distinguem tons de azul e amarelo; vermelho e verde se confundem na visão.</p>"
+            "<p><strong>Por que importa</strong></p>"
+            "<p>Brinquedos adequados e contrastes ajudam na estimulação e diminuem ansiedade.</p>"
+            "<p><strong>Recomendações</strong></p>"
+            "<p>Veterinários sugerem variar texturas e cheiros, já que o olfato segue protagonista.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "ONU aprova plano para força internacional em Gaza",
+        "categoria": "Mundo",
+        "resumo": "Mandato prevê apoio humanitário, proteção de corredores e mediação de prisioneiros.",
+        "conteudo": (
+            "<p><strong>O que foi votado</strong></p>"
+            "<p>Resolução autoriza estabilização de áreas civis e supervisão do cessar-fogo.</p>"
+            "<p><strong>Desafios</strong></p>"
+            "<p>Especialistas lembram que a missão depende de coordenação com atores locais.</p>"
+            "<p><strong>Próximos 30 dias</strong></p>"
+            "<p>Conselho volta a se reunir para medir entregas de ajuda e ajustar a operação.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1444084316824-dc26d6657664?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Dólar fecha em leve queda com otimismo sobre inflação",
+        "categoria": "Economia",
+        "resumo": "Moeda recua após dados de preços mais fracos nos EUA e expectativa de juros menores.",
+        "conteudo": (
+            "<p><strong>Motivo do movimento</strong></p>"
+            "<p>Investidores reduziram apostas em alta de juros, favorecendo moedas emergentes.</p>"
+            "<p><strong>Impacto local</strong></p>"
+            "<p>Importadores aproveitam para fechar contratos; exportadores seguem cautelosos.</p>"
+            "<p><strong>Olho no calendário</strong></p>"
+            "<p>Próxima divulgação de inflação pode consolidar ou reverter a tendência.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Novo filme de ficção bate recorde de bilheteria",
+        "categoria": "Entretenimento",
+        "resumo": "Produção espacial soma público histórico no fim de semana de estreia.",
+        "conteudo": (
+            "<p><strong>Sinopse</strong></p>"
+            "<p>A trama acompanha uma missão em lua gelada e mistura suspense com drama familiar.</p>"
+            "<p><strong>Números</strong></p>"
+            "<p>Filme arrecadou acima das previsões e já prepara sequência confirmada pelo estúdio.</p>"
+            "<p><strong>Crítica</strong></p>"
+            "<p>Fotografia e trilha sonora foram elogiadas; roteiro dividiu opiniões.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Sport e Náutico preparam clássico decisivo",
+        "categoria": "Esportes",
+        "resumo": "Times ajustam escalações e estudam rivais antes do duelo pelo estadual.",
+        "conteudo": (
+            "<p><strong>Preparação</strong></p>"
+            "<p>Sport treina bolas paradas; Náutico reforça transição rápida com garotos da base.</p>"
+            "<p><strong>Prováveis times</strong></p>"
+            "<p>Técnicos devem manter esquemas com três atacantes e laterais ofensivos.</p>"
+            "<p><strong>Clima</strong></p>"
+            "<p>Ingressos quase esgotados e segurança reforçada para o domingo à tarde.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Obras na Agamenon Magalhães alteram trânsito",
+        "categoria": "Pernambuco",
+        "resumo": "Intervenções em viadutos exigem desvios e reforço na sinalização.",
+        "conteudo": (
+            "<p><strong>Interdições</strong></p>"
+            "<p>Pistas locais têm bloqueios noturnos para concretagem e ajuste de drenagem.</p>"
+            "<p><strong>Rotas alternativas</strong></p>"
+            "<p>CTTU indica cruzamento pela Rui Barbosa e avenidas paralelas para evitar congestionamentos.</p>"
+            "<p><strong>Prazo</strong></p>"
+            "<p>Obras seguem até o fim do mês com monitoramento em tempo real de tráfego.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1508898578281-774ac4893c0c?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+        "titulo": "Avanço da IA Generativa transforma o mercado web",
+        "categoria": "Tecnologia",
+        "resumo": "Startups locais testam modelos customizados para sotaque e contexto regional.",
+        "conteudo": (
+            "<p><strong>Contexto local</strong></p>"
+            "<p>Empresas do Porto Digital treinam modelos com dados de serviços públicos e dialetos.</p>"
+            "<p><strong>Casos de uso</strong></p>"
+            "<p>Chatbots bilíngues, geração de imagens com referências do Recife e automação de relatórios.</p>"
+            "<p><strong>Próximos passos</strong></p>"
+            "<p>Laboratórios buscam parcerias com universidades para ampliar datasets e reduzir vieses.</p>"
+        ),
+        "imagem": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1000&q=80",
     },
 ]
 
 
 class Command(BaseCommand):
-    help = "Popula o banco de produção com artigos de exemplo."
+    help = "Popula o banco de produção com artigos completos."
 
     def handle(self, *args, **options):
         if Artigos.objects.exists():
@@ -230,7 +303,7 @@ class Command(BaseCommand):
         now = timezone.now()
         artigos = []
 
-        for idx, item in enumerate(PROD_ARTICLES):
+        for idx, item in enumerate(ARTICLES):
             artigos.append(
                 Artigos(
                     titulo=item["titulo"],
