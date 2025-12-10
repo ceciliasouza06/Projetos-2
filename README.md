@@ -57,9 +57,9 @@ Este projeto foi desenvolvido utilizando **programação em par (pair programmin
 ## 🖥️ Screencast
 
 - [➡️ Clique aqui para acessar o screencast do narrado do CI/CD](https://youtu.be/4GISLIlxunM)
-- [➡️ Clique aqui para acessar o screencast do narrado do Site](https://youtu.be/S-FrIwuR_4o)
-- [➡️ Clique aqui para acessar o screencast do Site](https://youtu.be/O-y1ph24Ol0)
-- [➡️ Clique aqui para acessar o screencast do Site Mobile](https://youtube.com/shorts/UktXjZAouEI)
+- [➡️ Clique aqui para acessar o screencast do narrado do Site](https://youtu.be/e7L-SiVtE6c)
+- [➡️ Clique aqui para acessar o screencast do Site](https://youtu.be/LaeDwRKdsbg)
+- [➡️ Clique aqui para acessar o screencast do Site Mobile](https://youtube.com/shorts/60VcrkOIvvI)
 
 
 
