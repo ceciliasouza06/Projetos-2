@@ -4,10 +4,20 @@
 <div class="article-shell">
     <section class="article-body">
         {% if bullets %}
-            <h1 class="section-heading">Pontos chave de "{{ bullets.first.artigo.titulo }}"</h1>
+            <h1 class="section-heading">Pontos chave de "{{ artigo.titulo }}"</h1>
             <ul class="stacked-list">
                 {% for bullet in bullets %}
                 <li>{{ bullet.bullets }}</li>
+                {% endfor %}
+            </ul>
+        {% elif fallback_bullets %}
+            <h1 class="section-heading">Resumo em topicos de "{{ artigo.titulo }}"</h1>
+            {% if auto_bullets %}
+            <p class="card-summary">Gerado automaticamente a partir do texto do artigo.</p>
+            {% endif %}
+            <ul class="stacked-list">
+                {% for item in fallback_bullets %}
+                <li>{{ item }}</li>
                 {% endfor %}
             </ul>
         {% else %}

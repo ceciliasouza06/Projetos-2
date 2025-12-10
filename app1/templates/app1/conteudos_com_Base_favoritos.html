@@ -96,12 +96,12 @@
 
         {% for artigo in sugestoes %}
         <div class="card">
-            {% if artigo.imagem_url %}
-            <img src="{{ artigo.imagem_url }}" alt="{{ artigo.titulo }}">
+            {% if artigo.imagem %}
+            <img src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}">
             {% endif %}
             <div class="card-content">
                 <h3>{{ artigo.titulo }}</h3>
-                <p>{{ artigo.subtitulo|default:"Sem resumo disponível." }}</p>
+                <p>{{ artigo.resumo|default:"Sem resumo disponível." }}</p>
                 <a href="{% url 'exibir_artigo' artigo.id %}" class="btn">Ler mais</a>
             </div>
         </div>

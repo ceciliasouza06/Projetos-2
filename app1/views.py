@@ -18,6 +18,7 @@ from django.contrib import messages
 from django.db import IntegrityError, transaction
 from .utils.progress import montar_progresso_bandeiras
 from django.utils.html import strip_tags
+import re
 
 
 def sugerir_leitura(request, artigo_id):
@@ -114,8 +115,41 @@ def colecao_bandeiras(request):
 
 
 def bullets(request, artigo_id):
-    bullets = Artigos.objects.get(id=artigo_id).bullets.all()
-    context = {"bullets": bullets}
+    artigo = Artigos.objects.get(id=artigo_id)
+    bullets = list(artigo.bullets.all())
+    tem_bullets = bool(bullets)
+
+    fallback_bullets = []
+    if not tem_bullets:
+        # Gera topicos automaticos usando resumo e, se precisar, o conteudo limpo.
+        textos_candidatos = [t for t in [artigo.resumo, artigo.conteudo] if t]
+
+        for texto in textos_candidatos:
+            if len(fallback_bullets) >= 4:
+                break
+            sentencas = re.split(r"[.!?]+", strip_tags(texto))
+            for s in [i.strip() for i in sentencas if i.strip()]:
+                if s not in fallback_bullets:
+                    fallback_bullets.append(s)
+                if len(fallback_bullets) >= 4:
+                    break
+
+        # Se so sobrou uma frase, quebra em clausulas para facilitar a leitura.
+        if len(fallback_bullets) == 1:
+            partes = [
+                p.strip()
+                for p in re.split(r"[;,:]+", fallback_bullets[0])
+                if p.strip()
+            ]
+            if partes:
+                fallback_bullets = partes[:4]
+
+    context = {
+        "artigo": artigo,
+        "bullets": bullets,
+        "fallback_bullets": fallback_bullets,
+        "auto_bullets": (not tem_bullets) and bool(fallback_bullets),
+    }
     return render(request, "app1/bullets.html", context)
 
 

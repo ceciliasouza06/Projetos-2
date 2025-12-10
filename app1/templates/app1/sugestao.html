@@ -1,73 +1,50 @@
-{% extends 'app1/base.html' %}
+{% extends "app1/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ artigo_atual.titulo }} | Detalhe do Artigo</title>
-    <link rel="stylesheet" href="{% static 'app1/css/style.css' %}">
 
-
-</head>
-<body>
-
-    <header class="main-header">
-        <div class="container">
-            <h1 class="logo-text">JC</h1>
-            <nav class="main-nav">
-                <a href="{% url 'home' %}">home</a>
-                <a href="{% url 'topico_pernambuco' %}">Pernambuco</a>
-                <a href="{% url 'topico_politica' %}">Política</a>
-                <a href="{% url 'topico_esportes' %}">Esportes</a>
-                <a href="{% url 'topico_cultura' %}">Cultura</a>
-            </nav>
-        </div>
-    </header>
-
-    <main class="container">
-        
-        <div class="artigo-principal">
-            
-            <p class="card-date">
-                <strong>Categoria:</strong> {{ artigo_atual.categoria }}
-                <br>
-                <strong>Publicado em:</strong> {{ artigo_atual.data_publicacao|date:"d/m/Y H:i" }}
-            </p>
-            
-            <h1>{{ artigo_atual.titulo }}</h1>
-            
-            <div class="conteudo">
-                {{ artigo_atual.conteudo|linebreaks|safe }} 
+{% block content %}
+<div class="article-shell">
+    <section class="article-body">
+        <div class="article-header">
+            <div class="article-eyebrow">
+                <span class="eyebrow-category">{{ artigo_atual.categoria }}</span>
+            </div>
+            <h1 class="article-title">{{ artigo_atual.titulo }}</h1>
+            {% if artigo_atual.resumo %}
+            <p class="article-subtitle">{{ artigo_atual.resumo }}</p>
+            {% endif %}
+            <div class="article-pubinfo">
+                Publicado em {{ artigo_atual.data_publicacao|date:"d/m/Y 'às' H\\hi" }}
             </div>
         </div>
 
-        <div class="sugestoes-box">
-            <h3>Sugestões de Leitura (Categoria: {{ artigo_atual.categoria }})</h3>
-            
-            {% if sugestoes %}
-                <ul>
-                    {% for artigo in sugestoes %}
-                    <li>
-                        <a href="{% url 'sugestao' artigo.pk %}">
-                            {{ artigo.titulo }}
-                        </a> 
-                        <small>({{ artigo.data_publicacao|date:"d/m/Y" }})</small>
-                    </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Não há mais artigos recentes nesta categoria para sugerir.</p>
-            {% endif %}
+        {% if artigo_atual.imagem %}
+        <div class="hero-media">
+            <img src="{{ artigo_atual.imagem }}" alt="{{ artigo_atual.titulo }}">
         </div>
+        {% endif %}
 
-    </main>
-
-    <footer class="main-footer">
-        <div class="container">
-            <p>&copy; {% now "Y" %} JCPM. Reconstruído para fins acadêmicos.</p>
+        <div class="article-text">
+            {{ artigo_atual.conteudo|safe }}
         </div>
-    </footer>
+    </section>
 
-</body>
-</html>
+    <section class="sugestoes-box">
+        <h3>Sugestões de leitura ({{ artigo_atual.categoria }})</h3>
+        {% if sugestoes %}
+        <ul>
+            {% for artigo in sugestoes %}
+            <li>
+                <a href="{% url 'sugestao' artigo.pk %}">{{ artigo.titulo }}</a>
+                {% if artigo.resumo %}
+                <div class="notification-summary">{{ artigo.resumo }}</div>
+                {% endif %}
+                <small>({{ artigo.data_publicacao|date:"d/m/Y" }})</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>Não há mais artigos recentes nesta categoria para sugerir.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock content %}

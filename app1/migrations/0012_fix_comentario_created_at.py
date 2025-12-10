@@ -26,6 +26,10 @@ class Migration(migrations.Migration):
             ],
             database_operations=[
                 migrations.RunSQL(
+                    "ALTER TABLE app1_comentario ADD COLUMN created_at datetime DEFAULT CURRENT_TIMESTAMP",
+                    migrations.RunSQL.noop,
+                ),
+                migrations.RunSQL(
                     "UPDATE app1_comentario SET created_at = COALESCE(created_at, CURRENT_TIMESTAMP);",
                     migrations.RunSQL.noop,
                 ),

@@ -109,7 +109,26 @@ class SmokeTests(TestCase):
     def test_bullets_view_responde_sem_registros(self):
         url = reverse("bullets", args=[self.artigo.id])
         response = self.client.get(url)
-        self.assertContains(response, "Nenhum Ponto Chave Encontrado")
+        self.assertContains(response, "Resumo em topicos")
+
+    def test_bullets_view_gera_topicos_do_resumo(self):
+        artigo = criar_artigo("Artigo sem bullets", "Politica")
+        artigo.resumo = (
+            "Primeira frase. Segunda frase! Terceira frase? Quarta frase continua."
+        )
+        artigo.save(update_fields=["resumo"])
+
+        response = self.client.get(reverse("bullets", args=[artigo.id]))
+        for trecho in [
+            "Primeira frase",
+            "Segunda frase",
+            "Terceira frase",
+            "Quarta frase continua",
+        ]:
+            self.assertContains(response, trecho)
+        self.assertContains(
+            response, "Gerado automaticamente a partir do texto do artigo."
+        )
 
     def test_bullets_view_responde_com_registros(self):
         Bullets.objects.create(artigo=self.artigo, bullets="Primeiro ponto")

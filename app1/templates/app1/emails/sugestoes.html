@@ -32,14 +32,14 @@
                         <td style="padding: 0 20px 20px 20px;">
                             <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ddd; border-radius: 5px; overflow: hidden;">
                                 <tr>
-                                    {% if artigo.imagem_url %}
+                                    {% if artigo.imagem %}
                                     <td width="150" valign="top">
-                                        <img src="{{ artigo.imagem_url }}" alt="{{ artigo.titulo }}" style="width:150px; height:auto; display:block;">
+                                        <img src="{{ artigo.imagem }}" alt="{{ artigo.titulo }}" style="width:150px; height:auto; display:block;">
                                     </td>
                                     {% endif %}
                                     <td valign="top" style="padding: 10px;">
                                         <h3 style="margin: 0 0 10px 0; color: #004080;">{{ artigo.titulo }}</h3>
-                                        <p style="margin:0 0 10px 0; color: #555; font-size:14px;">{{ artigo.subtitulo|default:"Sem resumo disponível." }}</p>
+                                        <p style="margin:0 0 10px 0; color: #555; font-size:14px;">{{ artigo.resumo|default:"Sem resumo disponível." }}</p>
                                         <a href="{{ artigo_url_base }}{{ artigo.id }}" style="display:inline-block; padding:8px 12px; background-color:#007bff; color:white; text-decoration:none; border-radius:4px; font-size:14px;">Ler mais</a>
                                     </td>
                                 </tr>
