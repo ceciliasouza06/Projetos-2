@@ -2188,6 +2188,13 @@ body {
     text-decoration: none;
 }
 
+.icon-btn svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    color: inherit;
+}
+
 .icon-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 14px rgba(0,0,0,0.08);

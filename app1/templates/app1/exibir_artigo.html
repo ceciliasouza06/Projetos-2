@@ -46,16 +46,28 @@
                     <form action="{% url 'favoritar_artigo' artigo.id %}" method="POST" class="icon-btn fav-form {% if user in artigo.favoritos.all %}active{% endif %}">
                         {% csrf_token %}
                         <button type="submit" aria-label="{% if user in artigo.favoritos.all %}Remover dos salvos{% else %}Salvar notícia{% endif %}">
-                            <i class="{% if user in artigo.favoritos.all %}fa-solid{% else %}fa-regular{% endif %} fa-bookmark"></i>
+                            {% if user in artigo.favoritos.all %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M8 3h8a1 1 0 0 1 1 1v15.56a.25.25 0 0 1-.39.2L12 16.73l-4.61 3.03a.25.25 0 0 1-.39-.2V4a1 1 0 0 1 1-1Z" fill="currentColor"/>
+                            </svg>
+                            {% else %}
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M7.75 3.5h8.5A1.25 1.25 0 0 1 17.5 4.75v14.19a.25.25 0 0 1-.39.2L12 15.62l-5.11 3.52a.25.25 0 0 1-.39-.2V4.75A1.25 1.25 0 0 1 7.75 3.5Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                            </svg>
+                            {% endif %}
                         </button>
                     </form>
                     {% else %}
                     <a href="{% url 'login' %}" class="icon-btn" aria-label="Fazer login para salvar">
-                        <i class="fa-regular fa-bookmark"></i>
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M7.75 3.5h8.5A1.25 1.25 0 0 1 17.5 4.75v14.19a.25.25 0 0 1-.39.2L12 15.62l-5.11 3.52a.25.25 0 0 1-.39-.2V4.75A1.25 1.25 0 0 1 7.75 3.5Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                        </svg>
                     </a>
                     {% endif %}
                     <a href="#" class="icon-btn share-btn" aria-label="Compartilhar esta notícia">
-                        <i class="fa fa-share-alt"></i>
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M15 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm0 0-6 3.5m0 0a2.5 2.5 0 1 0-3 2.298 2.5 2.5 0 0 0 3-2.299Zm0 0 6 3.5m0 0a2.5 2.5 0 1 0 2.5 2.5 2.5 2.5 0 0 0-2.5-2.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                     </a>
                 </div>
             </div>
