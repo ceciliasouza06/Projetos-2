@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.db import IntegrityError, transaction
 from .utils.progress import montar_progresso_bandeiras
+from django.utils.html import strip_tags
 
 
 def sugerir_leitura(request, artigo_id):
@@ -120,7 +121,7 @@ def bullets(request, artigo_id):
 
 def artigo_audio(request, artigo_id):
     artigo = get_object_or_404(Artigos, id=artigo_id)
-    texto = artigo.conteudo
+    texto = strip_tags(artigo.conteudo)
     tts = gTTS(text=texto, lang="pt", slow=False)
     buffer = io.BytesIO()
     tts.write_to_fp(buffer)
@@ -353,21 +354,25 @@ def ao_vivo(request):
             "titulo": "Radio Jornal - FM 90.3",
             "origem": "Radio Jornal (interior)",
             "embed_url": "https://www.youtube.com/embed/live_stream?channel=UC8u0NiyHh6ZzqbmS_MyF6mA",
+            "watch_url": "https://www.youtube.com/channel/UC8u0NiyHh6ZzqbmS_MyF6mA/live",
         },
         {
             "titulo": "Radio Jornal (Recife)",
             "origem": "Radio Jornal (Recife)",
             "embed_url": "https://www.youtube.com/embed/live_stream?channel=UCV1b-38tvz3rVln1zC_gJiw",
+            "watch_url": "https://www.youtube.com/channel/UCV1b-38tvz3rVln1zC_gJiw/live",
         },
         {
             "titulo": "TV Jornal (Recife)",
             "origem": "TV Jornal (Recife)",
             "embed_url": "https://www.youtube.com/embed/live_stream?channel=UCo4KAd86PX3cKWf0E0V2GxQ",
+            "watch_url": "https://www.youtube.com/channel/UCo4KAd86PX3cKWf0E0V2GxQ/live",
         },
         {
             "titulo": "TV Jornal (interior)",
             "origem": "TV Jornal (interior)",
             "embed_url": "https://www.youtube.com/embed/live_stream?channel=UCYKPNC7kwh28ykVfoCkbHgQ",
+            "watch_url": "https://www.youtube.com/channel/UCYKPNC7kwh28ykVfoCkbHgQ/live",
         },
     ]
 
@@ -427,10 +432,10 @@ def favoritar_artigo(request, artigo_id):
     # Verifica se o usu?rio j? favoritou este artigo
     if artigo.favoritos.filter(id=request.user.id).exists():
         artigo.favoritos.remove(request.user)
-        messages.info(request, "Not?cia removida dos salvos.")
+        messages.info(request, "Notícia removida dos salvos.")
     else:
         artigo.favoritos.add(request.user)
-        messages.success(request, "Not?cia salva em 'Salvos'.")
+        messages.success(request, "Notícia salva em 'Salvos'.")
     return redirect("exibir_artigo", artigo_id=artigo.id)
 
 

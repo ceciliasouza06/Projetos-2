@@ -9,7 +9,10 @@
         </div>
         {% if hero %}
         <div class="live-embed large">
-            <iframe src="{{ hero.embed_url }}" title="{{ hero.titulo }}" frameborder="0" allowfullscreen></iframe>
+            <iframe src="{{ hero.embed_url }}" title="{{ hero.titulo }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+        <div class="live-hero-actions">
+            <a class="cta hero-watch" href="{{ hero.watch_url|default:hero.embed_url }}" target="_blank" rel="noopener">Assistir no YouTube</a>
         </div>
         {% endif %}
 
@@ -22,7 +25,7 @@
                 <div class="live-meta">
                     <p class="live-title">{{ item.titulo }}</p>
                     <span>{{ item.origem }}</span>
-                    <a class="cta" href="{{ item.embed_url }}" target="_blank" rel="noopener">Assistir</a>
+                    <a class="cta" href="{{ item.watch_url|default:item.embed_url }}" target="_blank" rel="noopener">Assistir</a>
                 </div>
             </article>
             {% empty %}
