@@ -20,7 +20,12 @@ def add_created_at_column(apps, schema_editor):
     qn = schema_editor.quote_name
 
     if "created_at" not in columns:
-        field = Comentario._meta.get_field("created_at")
+        # When this migration runs, the historical state does not yet include
+        # created_at (it still has criado_em). We therefore build the field
+        # manually instead of relying on _meta.get_field.
+        field = models.DateTimeField(auto_now_add=True, db_column="created_at")
+        field.set_attributes_from_name("created_at")
+        field.model = Comentario
         schema_editor.add_field(Comentario, field)
         columns.add("created_at")
 
