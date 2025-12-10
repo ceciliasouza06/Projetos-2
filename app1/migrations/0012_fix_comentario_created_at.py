@@ -2,6 +2,40 @@
 from django.db import migrations, models
 
 
+def _existing_columns(schema_editor, table_name):
+    connection = schema_editor.connection
+    with connection.cursor() as cursor:
+        return {
+            getattr(col, "name", col[0])
+            for col in connection.introspection.get_table_description(
+                cursor, table_name
+            )
+        }
+
+
+def add_created_at_column(apps, schema_editor):
+    table_name = "app1_comentario"
+    columns = _existing_columns(schema_editor, table_name)
+    Comentario = apps.get_model("app1", "Comentario")
+    qn = schema_editor.quote_name
+
+    if "created_at" not in columns:
+        field = Comentario._meta.get_field("created_at")
+        schema_editor.add_field(Comentario, field)
+        columns.add("created_at")
+
+    if "criado_em" in columns:
+        schema_editor.execute(
+            f"UPDATE {qn(table_name)} "
+            f"SET {qn('created_at')} = COALESCE({qn('created_at')}, {qn('criado_em')}, CURRENT_TIMESTAMP)"
+        )
+    else:
+        schema_editor.execute(
+            f"UPDATE {qn(table_name)} "
+            f"SET {qn('created_at')} = COALESCE({qn('created_at')}, CURRENT_TIMESTAMP)"
+        )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -25,13 +59,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             database_operations=[
-                migrations.RunSQL(
-                    "ALTER TABLE app1_comentario ADD COLUMN created_at datetime DEFAULT CURRENT_TIMESTAMP",
-                    migrations.RunSQL.noop,
-                ),
-                migrations.RunSQL(
-                    "UPDATE app1_comentario SET created_at = COALESCE(created_at, CURRENT_TIMESTAMP);",
-                    migrations.RunSQL.noop,
+                migrations.RunPython(
+                    add_created_at_column, migrations.RunPython.noop
                 ),
             ],
         ),

@@ -1,29 +1,41 @@
 from django.db import migrations
 
 
+def _existing_columns(schema_editor, table_name):
+    connection = schema_editor.connection
+    with connection.cursor() as cursor:
+        return {
+            getattr(col, "name", col[0])
+            for col in connection.introspection.get_table_description(
+                cursor, table_name
+            )
+        }
+
+
 def ensure_created_at(apps, schema_editor):
     """
     Garante que a coluna created_at exista no banco (deploy e ambientes novos).
     Se criada agora, reaproveita o valor de criado_em quando estiver presente.
     """
-    conn = schema_editor.connection
-    cursor = conn.cursor()
-    existing = {
-        row[1]
-        for row in cursor.execute("PRAGMA table_info(app1_comentario);").fetchall()
-    }
+    table_name = "app1_comentario"
+    existing = _existing_columns(schema_editor, table_name)
+    Comentario = apps.get_model("app1", "Comentario")
+    qn = schema_editor.quote_name
 
     if "created_at" not in existing:
-        cursor.execute(
-            "ALTER TABLE app1_comentario ADD COLUMN created_at datetime DEFAULT CURRENT_TIMESTAMP"
+        field = Comentario._meta.get_field("created_at")
+        schema_editor.add_field(Comentario, field)
+        existing.add("created_at")
+
+    if "criado_em" in existing:
+        schema_editor.execute(
+            f"UPDATE {qn(table_name)} "
+            f"SET {qn('created_at')} = COALESCE({qn('created_at')}, {qn('criado_em')}, CURRENT_TIMESTAMP)"
         )
-        if "criado_em" in existing:
-            cursor.execute(
-                "UPDATE app1_comentario SET created_at = COALESCE(criado_em, CURRENT_TIMESTAMP)"
-            )
     else:
-        cursor.execute(
-            "UPDATE app1_comentario SET created_at = COALESCE(created_at, CURRENT_TIMESTAMP)"
+        schema_editor.execute(
+            f"UPDATE {qn(table_name)} "
+            f"SET {qn('created_at')} = COALESCE({qn('created_at')}, CURRENT_TIMESTAMP)"
         )
 
 

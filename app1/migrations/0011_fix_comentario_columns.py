@@ -2,21 +2,28 @@
 from django.db import migrations
 
 
+def _existing_columns(schema_editor, table_name):
+    connection = schema_editor.connection
+    with connection.cursor() as cursor:
+        return {
+            getattr(col, "name", col[0])
+            for col in connection.introspection.get_table_description(
+                cursor, table_name
+            )
+        }
+
+
 def ensure_comentario_columns(apps, schema_editor):
-    conn = schema_editor.connection
-    cursor = conn.cursor()
-    existing = {
-        row[1] for row in cursor.execute("PRAGMA table_info(app1_comentario);").fetchall()
-    }
+    table_name = "app1_comentario"
+    existing = _existing_columns(schema_editor, table_name)
+    Comentario = apps.get_model("app1", "Comentario")
 
     if "avatar" not in existing:
-        cursor.execute(
-            "ALTER TABLE app1_comentario ADD COLUMN avatar varchar(300) DEFAULT ''"
-        )
+        field = Comentario._meta.get_field("avatar")
+        schema_editor.add_field(Comentario, field)
     if "criado_em" not in existing:
-        cursor.execute(
-            "ALTER TABLE app1_comentario ADD COLUMN criado_em datetime DEFAULT CURRENT_TIMESTAMP"
-        )
+        field = Comentario._meta.get_field("criado_em")
+        schema_editor.add_field(Comentario, field)
 
 
 class Migration(migrations.Migration):
